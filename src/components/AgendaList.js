@@ -57,8 +57,10 @@ const titleStyles = {
   fontFamily: "var(--font-family-base)",
   fontStyle: "normal",
   fontSize: "2rem",
+  lineHeight: "2rem",
   fontWeight: 600,
   letterSpacing: "1px",
+  textTransform: "uppercase",
   margin: 0,
   marginLeft: "15vw",
   color: "black",
@@ -98,7 +100,8 @@ export default function AgendaList({ events, basePath = "/evento" }) {
                 marginBottom: "-1vh",
                 fontSize: "3.75rem",
                 fontWeight: 600,
-                letterSpacing: "0.5px",
+                letterSpacing: "1px",
+                textTransform: "uppercase",
                 textAlign: "left",
               }}
             >
@@ -115,7 +118,7 @@ export default function AgendaList({ events, basePath = "/evento" }) {
           </header>
 
           <div style={{ display: "flex", flexDirection: "column" }}>
-            {groupEvents.map((event) => {
+            {groupEvents.map((event, index) => {
               const dateInfo = (event.dates || [])
                 .map((d) => {
                   if (!d.date) return null;
@@ -132,6 +135,8 @@ export default function AgendaList({ events, basePath = "/evento" }) {
                 .filter(Boolean)
                 .join(" | ");
 
+              const isLastItem = index === groupEvents.length - 1;
+
               return (
                 <TransitionLink
                   key={event.id}
@@ -139,35 +144,71 @@ export default function AgendaList({ events, basePath = "/evento" }) {
                   style={{ textDecoration: "none", width: "100%" }}
                   className="agendaLinkHover"
                 >
-                  <article style={agendaItemStyles}>
-                    <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+                  <article style={{ ...agendaItemStyles, borderBottom: isLastItem ? "none" : "1px solid black" }}>
+                    <div style={{ display: "flex", flexDirection: "row", alignItems: "flex-end", gap: "1.5rem", width: "100%" }}>
 
-                      <h3 style={{ ...titleStyles }}>
-                        {event.title}
-                      </h3>
-                      <h2 style={{ ...titleStyles, marginLeft: 0 }}>
+                      <h2 style={{ ...titleStyles, marginLeft: 0, fontSize: "3rem", marginBottom: "0.25rem" }}>
                         {dayString}
                       </h2>
 
-                      {timeString && <p style={{ ...dateStyles, marginLeft: 0 }}>{timeString}</p>}
+                      <div style={{ display: "flex", flexDirection: "column" }}>
+                        <h3 style={{ ...titleStyles, marginLeft: 0 }}>
+                          {event.title}
+                        </h3>
 
-                      {(event.type?.length > 0 || event.directors?.length > 0) && (
-                        <p style={{ ...dateStyles, fontStyle: "italic", fontSize: "0.9rem" }}>
-                          {[
-                            event.type?.length > 0 ? event.type.join(", ") : null,
-                            event.directors?.length > 0
-                              ? `Dir: ${event.directors.map((dir) => dir.name).join(", ")}`
-                              : null,
-                          ].filter(Boolean).join(" | ")}
-                        </p>
-                      )}
+                        <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", marginBottom: "0.15rem", marginTop: "0.25rem" }}>
+                          {timeString && <p style={{ ...dateStyles, marginLeft: 0, fontSize: "1.25rem" }}>{timeString}</p>}
+
+                          {(event.type?.length > 0 || event.directors?.length > 0) && (
+                            <p style={{ ...dateStyles, fontStyle: "italic", fontSize: "1.25rem", lineHeight: '20px' }}>
+                              {[
+                                event.type?.length > 0 ? event.type.join(", ") : null,
+                                event.directors?.length > 0
+                                  ? `Dir: ${event.directors.map((dir) => dir.name).join(", ")}`
+                                  : null,
+                              ].filter(Boolean).join(" | ")}
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </article>
                 </TransitionLink>
               );
             })}
           </div>
-          <h1 style={{ fontSize: "4rem", textTransform: "uppercase", letterSpacing: "0.5px", display: "inline-block", fontWeight: "600", textAlign: "LEFT", marginLeft: '0', marginRight: 'auto' }}>2026</h1>
+          <header
+            style={{
+              marginTop: "-2rem",
+              display: "flex",
+              alignItems: "flex-end",
+              gap: "0.5rem",
+              width: "100%",
+            }}
+          >
+            <AnimatedUnderline
+              loaded={true}
+              style={{
+                flex: 1,
+                minWidth: 0,
+                borderTop: "2px solid black",
+              }}
+            />
+            <h2
+              style={{
+                fontFamily: "var(--font-family-base)",
+                margin: 0,
+                marginBottom: "-1vh",
+                fontSize: "3.75rem",
+                fontWeight: 600,
+                letterSpacing: "1px",
+                textTransform: "uppercase",
+                textAlign: "right",
+              }}
+            >
+              2026
+            </h2>
+          </header>
         </div>
       ))}
     </section>

@@ -76,7 +76,7 @@ export default async function AgendaPage() {
       <style
         dangerouslySetInnerHTML={{
           __html: `
-            .agendaPageOverride *:not(h1) {
+            .agendaPageOverride *:not(h1):not(h2):not(h3) {
               font-family: var(--font-paragraph) !important;
             }
           `,

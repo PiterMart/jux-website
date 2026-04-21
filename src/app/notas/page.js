@@ -77,13 +77,14 @@ export default async function NotasPage() {
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: "1rem",
               width: "100%",
               margin: "auto",
             }}
           >
-            <AnimatedPageHeader loaded={true}>NOTAS</AnimatedPageHeader>
-            <p className={styles.pageSubtext}>
+            <div style={{ marginBottom: '1.5rem', overflow: 'hidden' }}>
+              <AnimatedPageHeader loaded={true}>NOTAS</AnimatedPageHeader>
+            </div>
+            <p className={styles.pageSubtext} style={{ marginBottom: '2rem', maxWidth: '1000px' }}>
               Investigaciones, registros y reflexiones sobre la práctica artística y performática contemporánea.
             </p>
 

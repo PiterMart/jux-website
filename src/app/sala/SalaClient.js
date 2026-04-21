@@ -6,14 +6,16 @@ import styles from '../../styles/Sala.module.css';
 import AnimatedPageHeader from '../../components/AnimatedPageHeader';
 
 const IMAGES = [
+  '/espacio/SalaNosEnvera10.jpg',
+  '/espacio/SalaNosEnvera9.jpg',
   '/espacio/SalaNosEnvera4.jpg',
   '/espacio/SalaNosEnvera.jpg',
+  '/espacio/SalaNosEnvera7.jpg',
+  '/espacio/SalaNosEnvera8.jpg',
   '/espacio/SalaNosEnvera2.jpg',
   '/espacio/SalaNosEnvera3.jpg',
   '/espacio/SalaNosEnvera5.jpg',
   '/espacio/SalaNosEnvera6.jpg',
-  '/espacio/SalaNosEnvera7.jpg',
-  '/espacio/SalaNosEnvera8.jpg',
 ];
 
 function CarouselImage({ src, alt, onClick }) {

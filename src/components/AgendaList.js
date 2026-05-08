@@ -9,28 +9,64 @@ const MONTH_PLACEHOLDER = "—";
 
 function groupByMonth(cards) {
   const groups = [];
+  
   for (const card of cards) {
-    let monthString = MONTH_PLACEHOLDER;
-    if (card.dates && card.dates.length > 0) {
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-      const futureDates = card.dates.filter(d => d.date >= now);
-      // Fallback to first date if all are in the past
-      const targetDate = futureDates.length > 0 ? futureDates[0].date : card.dates[0].date;
+    if (!card.dates || card.dates.length === 0) continue;
 
-      if (targetDate) {
-        const formatted = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(targetDate);
-        monthString = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const futureDates = card.dates.filter(d => {
+      const dateObj = d.date.toDate ? d.date.toDate() : new Date(d.date);
+      const dDate = new Date(dateObj);
+      dDate.setHours(0, 0, 0, 0);
+      return dDate.getTime() >= now.getTime();
+    });
+
+    if (futureDates.length === 0) continue;
+
+    const datesByMonth = {};
+    for (const d of futureDates) {
+      const dateObj = d.date.toDate ? d.date.toDate() : new Date(d.date);
+      const formatted = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(dateObj);
+      const monthString = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+      
+      if (!datesByMonth[monthString]) datesByMonth[monthString] = [];
+      datesByMonth[monthString].push(d);
+    }
+
+    for (const [monthString, monthDates] of Object.entries(datesByMonth)) {
+      let group = groups.find(g => g.month === monthString);
+      if (!group) {
+        group = { month: monthString, events: [] };
+        groups.push(group);
       }
+      group.events.push({ ...card, dates: monthDates });
     }
-
-    let group = groups.find(g => g.month === monthString);
-    if (!group) {
-      group = { month: monthString, events: [] };
-      groups.push(group);
-    }
-    group.events.push(card);
   }
+
+  groups.forEach(group => {
+    group.sortDate = Math.min(...group.events.flatMap(e => 
+      e.dates.map(d => {
+        const dateObj = d.date.toDate ? d.date.toDate() : new Date(d.date);
+        return dateObj.getTime();
+      })
+    ));
+    
+    group.events.sort((a, b) => {
+      const aMin = Math.min(...a.dates.map(d => {
+        const dateObj = d.date.toDate ? d.date.toDate() : new Date(d.date);
+        return dateObj.getTime();
+      }));
+      const bMin = Math.min(...b.dates.map(d => {
+        const dateObj = d.date.toDate ? d.date.toDate() : new Date(d.date);
+        return dateObj.getTime();
+      }));
+      return aMin - bMin;
+    });
+  });
+
+  groups.sort((a, b) => a.sortDate - b.sortDate);
 
   return groups.map(g => [g.month, g.events]);
 }
@@ -125,11 +161,11 @@ export default function AgendaList({ events, basePath = "/evento" }) {
                   const dateObj = d.date.toDate ? d.date.toDate() : new Date(d.date);
                   if (isNaN(dateObj.getTime())) return null;
                   const day = new Intl.DateTimeFormat('es-ES', { day: 'numeric' }).format(dateObj);
-                  return { day, time: d.time };
+                  return { day, time: d.time, dateObj };
                 })
-                .filter(Boolean);
+                .filter(Boolean)
+                .sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
 
-              const dayString = dateInfo.map((d) => d.day).join(" | ");
               const timeString = dateInfo
                 .map((d) => (d.time ? `${d.time}hs` : null))
                 .filter(Boolean)
@@ -147,9 +183,13 @@ export default function AgendaList({ events, basePath = "/evento" }) {
                   <article style={{ ...agendaItemStyles, borderBottom: isLastItem ? "none" : "1px solid black" }}>
                     <div style={{ display: "flex", flexDirection: "row", alignItems: "flex-end", gap: "1.5rem", width: "100%" }}>
 
-                      <h2 style={{ ...titleStyles, marginLeft: 0, fontSize: "3rem", marginBottom: "0.25rem" }}>
-                        {dayString}
-                      </h2>
+                      <div style={{ display: "flex", flexDirection: "column", marginBottom: "0.25rem" }}>
+                        {dateInfo.map((d, i) => (
+                          <h2 key={i} style={{ ...titleStyles, marginLeft: 0, fontSize: "3rem", lineHeight: "1" }}>
+                            {d.day}
+                          </h2>
+                        ))}
+                      </div>
 
                       <div style={{ display: "flex", flexDirection: "column" }}>
                         <h3 style={{ ...titleStyles, marginLeft: 0 }}>
@@ -177,38 +217,40 @@ export default function AgendaList({ events, basePath = "/evento" }) {
               );
             })}
           </div>
-          <header
-            style={{
-              marginTop: "-2rem",
-              display: "flex",
-              alignItems: "flex-end",
-              gap: "0.5rem",
-              width: "100%",
-            }}
-          >
-            <AnimatedUnderline
-              loaded={true}
+          {idx === groups.length - 1 && (
+            <header
               style={{
-                flex: 1,
-                minWidth: 0,
-                borderTop: "2px solid black",
-              }}
-            />
-            <h2
-              style={{
-                fontFamily: "var(--font-family-base)",
-                margin: 0,
-                marginBottom: "-1vh",
-                fontSize: "3.75rem",
-                fontWeight: 600,
-                letterSpacing: "1px",
-                textTransform: "uppercase",
-                textAlign: "right",
+                marginTop: "-2rem",
+                display: "flex",
+                alignItems: "flex-end",
+                gap: "0.5rem",
+                width: "100%",
               }}
             >
-              2026
-            </h2>
-          </header>
+              <AnimatedUnderline
+                loaded={true}
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  borderTop: "2px solid black",
+                }}
+              />
+              <h2
+                style={{
+                  fontFamily: "var(--font-family-base)",
+                  margin: 0,
+                  marginBottom: "-1vh",
+                  fontSize: "3.75rem",
+                  fontWeight: 600,
+                  letterSpacing: "1px",
+                  textTransform: "uppercase",
+                  textAlign: "right",
+                }}
+              >
+                2026
+              </h2>
+            </header>
+          )}
         </div>
       ))}
     </section>

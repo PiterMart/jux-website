@@ -26,6 +26,12 @@ export default function TeamMemberClient({ member, memberEvents, memberEventImag
     <>
       <section className={detailStyles.profile}>
         <div className={detailStyles.mediaColumn}>
+
+          <div className={detailStyles.identityCard}>
+            <h1 className={detailStyles.name}>{member.name}</h1>
+            {member.origin && <p className={detailStyles.origin}>{member.origin}</p>}
+            {roles.length > 0 && <p className={detailStyles.roles}>{roles.join(" · ")}</p>}
+          </div>
           <div className={detailStyles.imageWrapper}>
             {member.profilePicture ? (
               <Image src={member.profilePicture} alt={`Retrato de ${member.name} - Nos Envera`} className={detailStyles.image} width={400} height={400} sizes="(max-width: 768px) 100vw, 50vw" style={{ objectFit: "cover" }} />
@@ -34,12 +40,6 @@ export default function TeamMemberClient({ member, memberEvents, memberEventImag
                 {member.name?.charAt(0) ?? "?"}
               </div>
             )}
-          </div>
-
-          <div className={detailStyles.identityCard}>
-            <h1 className={detailStyles.name}>{member.name}</h1>
-            {member.origin && <p className={detailStyles.origin}>{member.origin}</p>}
-            {roles.length > 0 && <p className={detailStyles.roles}>{roles.join(" · ")}</p>}
           </div>
         </div>
 
@@ -84,7 +84,7 @@ export default function TeamMemberClient({ member, memberEvents, memberEventImag
 
           <div className={detailStyles.section}>
             {memberEvents.length === 0 ? (
-              <p className={detailStyles.paragraphs}>Todavía no hay actividades registradas para este miembro.</p>
+              <p className={detailStyles.paragraphs}></p>
             ) : (
               <Grid cards={memberEvents} hideImages={true} basePath="/evento" />
             )}

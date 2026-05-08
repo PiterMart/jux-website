@@ -146,7 +146,7 @@ export default function SalaClient() {
             onMouseOver={(e) => (e.currentTarget.style.opacity = "0.8")}
             onMouseOut={(e) => (e.currentTarget.style.opacity = "1")}
           >
-            Descargar Rider Técnico
+            Rider Técnico
           </a>
           <div className={styles.footerCol}>
             <div>

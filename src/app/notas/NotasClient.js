@@ -36,19 +36,6 @@ export default function NotasClient({ initialNotas }) {
   const [loading, setLoading] = useState(!initialNotas);
   const [error, setError] = useState(null);
   const [visibleSubtitles, setVisibleSubtitles] = useState(new Set());
-  const [expandedItems, setExpandedItems] = useState(new Set());
-
-  const setExpanded = (itemId, isExpanded) => {
-    setExpandedItems((prev) => {
-      const next = new Set(prev);
-      if (isExpanded) {
-        next.add(itemId);
-      } else {
-        next.delete(itemId);
-      }
-      return next;
-    });
-  };
 
   useEffect(() => {
     const observerOptions = {
@@ -95,28 +82,14 @@ export default function NotasClient({ initialNotas }) {
       )}
 
       {!loading && !error && notaItems.length > 0 && (
-        <ul
-          style={{
-            listStyle: "none",
-            margin: 0,
-            padding: 0,
-            borderTop: "1px solid #e0e0e0",
-          }}
-        >
+        <ul className={styles.notasGrid}>
           {notaItems.map((notaItem) => {
-            const isExpanded = expandedItems.has(notaItem.id);
             return (
               <li
                 key={notaItem.id}
-                onMouseEnter={() => setExpanded(notaItem.id, true)}
-                onMouseLeave={() => setExpanded(notaItem.id, false)}
-                style={{
-                  borderBottom: "1px solid black",
-                  padding: "0",
-                }}
+                className={styles.notaItem}
               >
                 <div
-                  aria-expanded={isExpanded}
                   style={{
                     width: "100%",
                     textAlign: "left",
@@ -129,11 +102,10 @@ export default function NotasClient({ initialNotas }) {
                   }}
                 >
                   <span
-                    className={`${styles.sectionSubtitle} ${
-                      visibleSubtitles.has(`subtitle-${notaItem.id}`)
+                    className={`${styles.sectionSubtitle} ${visibleSubtitles.has(`subtitle-${notaItem.id}`)
                         ? styles.sectionSubtitleVisible
                         : ""
-                    }`}
+                      }`}
                     data-subtitle-id={`subtitle-${notaItem.id}`}
                     style={{
                       display: "block",
@@ -147,108 +119,84 @@ export default function NotasClient({ initialNotas }) {
                   >
                     {notaItem.title}
                   </span>
-                  <span
-                    style={{
-                      fontSize: "1.5rem",
-                      lineHeight: "1",
-                      transform: isExpanded ? "rotate(45deg)" : "rotate(0deg)",
-                      transition: "transform 0.2s ease",
-                    }}
-                    aria-hidden="true"
-                  >
-                    +
-                  </span>
                 </div>
 
-                {isExpanded && (
-                  <div
-                    style={{
-                      paddingBottom: "1rem",
-                      display: "flex",
-                      flexDirection: "row",
-                      gap: "1.5rem",
-                      fontSize: "0.95rem",
-                      color: "#333",
-                      alignItems: "flex-start",
-                    }}
-                  >
-                    {notaItem.coverImage && (
-                      <div
+                <div className={styles.notaContent}>
+                  {notaItem.coverImage && (
+                    <div
+                      style={{
+                        flexShrink: 0,
+                        maxWidth: "350px",
+                        marginTop: "0.25rem",
+                        marginBottom: "0.5rem",
+                      }}
+                    >
+                      <img
+                        src={notaItem.coverImage}
+                        alt={notaItem.title}
                         style={{
-                          flexShrink: 0,
-                          width: "40%",
-                          maxWidth: "350px",
-                          marginTop: "0.25rem",
-                          marginBottom: "0.5rem",
+                          maxWidth: "100%",
+                          maxHeight: "40vh",
+                          height: "auto",
+                          objectFit: "contain",
+                          display: "block",
                         }}
-                      >
-                        <img
-                          src={notaItem.coverImage}
-                          alt={notaItem.title}
-                          style={{
-                            maxWidth: "100%",
-                            maxHeight: "40vh",
-                            height: "auto",
-                            objectFit: "contain",
-                            display: "block",
-                          }}
-                        />
-                      </div>
+                      />
+                    </div>
+                  )}
+
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0" }}>
+                    {notaItem.subtitle && (
+                      <p style={{ fontWeight: "500", margin: 0 }}>{notaItem.subtitle}</p>
                     )}
 
-                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0" }}>
-                      {notaItem.subtitle && (
-                        <p style={{ fontWeight: "500", margin: 0 }}>{notaItem.subtitle}</p>
-                      )}
+                    {notaItem.date && (
+                      <p style={{ color: "#666", margin: 0 }}>
+                        {formatNotaDate(notaItem.date)}
+                      </p>
+                    )}
 
-                      {notaItem.date && (
-                        <p style={{ color: "#666", margin: 0 }}>
-                          {formatNotaDate(notaItem.date)}
-                        </p>
-                      )}
+                    {notaItem.description && (
+                      <p style={{ lineHeight: "1.6rem", margin: 0 }}>
+                        {notaItem.description}
+                      </p>
+                    )}
 
-                      {notaItem.description && (
-                        <p style={{ lineHeight: "1.6rem", margin: 0 }}>
-                          {notaItem.description}
-                        </p>
-                      )}
-
-                      {notaItem.links && notaItem.links.length > 0 && (
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "0.5rem",
-                          }}
-                        >
-                          {notaItem.links.map((link, linkIndex) => (
-                            <a
-                              key={`${notaItem.id}-link-${linkIndex}`}
-                              href={link.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                display: "inline-block",
-                                marginTop: "0.75rem",
-                                padding: "0.6rem 1.2rem",
-                                backgroundColor: "#111",
-                                color: "#fff",
-                                textDecoration: "none",
-                                letterSpacing: "0.5px",
-                                fontSize: "0.85rem",
-                                textTransform: "uppercase",
-                                textAlign: "center",
-                                alignSelf: "flex-start",
-                              }}
-                            >
-                              VER NOTA
-                            </a>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    {notaItem.links && notaItem.links.length > 0 && (
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "0.5rem",
+                        }}
+                      >
+                        {notaItem.links.map((link, linkIndex) => (
+                          <a
+                            key={`${notaItem.id}-link-${linkIndex}`}
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              display: "inline-block",
+                              marginTop: "0.75rem",
+                              padding: "0.6rem 1.2rem",
+                              backgroundColor: "#111",
+                              color: "#fff",
+                              textDecoration: "none",
+                              letterSpacing: "0.5px",
+                              fontSize: "0.85rem",
+                              textTransform: "uppercase",
+                              textAlign: "center",
+                              alignSelf: "flex-start",
+                            }}
+                          >
+                            VER NOTA
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </li>
             );
           })}

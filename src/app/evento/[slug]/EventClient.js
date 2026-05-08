@@ -154,7 +154,7 @@ export default function EventClient({ performance }) {
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem", flex: 1, textAlign: "left", alignItems: "flex-start" }}>
           {performance.subtitle ? (
-            <p style={{ fontSize: "1.1rem", color: "#444", margin: 0, textAlign: "left" }}>{performance.subtitle}</p>
+            <p style={{ fontSize: "2rem", lineHeight: "1", color: "#444", margin: 0, textAlign: "left" }}>{performance.subtitle}</p>
           ) : null}
 
           {performance.description?.length > 0 ? (

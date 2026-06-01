@@ -36,6 +36,7 @@ export default function EventUploader() {
     event_type: [],
     purchase_link: "",
     video_link: "",
+    pdf_link: "",
   });
   const [existingGallery, setExistingGallery] = useState([]);
   const [newImages, setNewImages] = useState([]);
@@ -46,16 +47,19 @@ export default function EventUploader() {
   const [bannerPreview, setBannerPreview] = useState(null);
   const [flyerImage, setFlyerImage] = useState(null);
   const [flyerPreview, setFlyerPreview] = useState(null);
+  const [pdfFile, setPdfFile] = useState(null);
   const [directorInput, setDirectorInput] = useState("");
   const [artistInput, setArtistInput] = useState("");
   const fileInputRef = useRef(null);
   const bannerInputRef = useRef(null);
   const flyerInputRef = useRef(null);
+  const pdfInputRef = useRef(null);
   
   // Drag and drop states
   const [isBannerDragOver, setIsBannerDragOver] = useState(false);
   const [isFlyerDragOver, setIsFlyerDragOver] = useState(false);
   const [isGalleryDragOver, setIsGalleryDragOver] = useState(false);
+  const [isPdfDragOver, setIsPdfDragOver] = useState(false);
 
   // Compression options reference
   const compressionOptions = {
@@ -282,9 +286,14 @@ export default function EventUploader() {
             : [],
           purchase_link: data.purchase_link || data.purchaseLink || "",
           video_link: data.video_link || "",
+          pdf_link: data.pdf_link || data.pdfLink || "",
         });
         setDirectorInput("");
         setArtistInput("");
+        setPdfFile(null);
+        if (pdfInputRef.current) {
+          pdfInputRef.current.value = "";
+        }
   
         const existingGalleryData = data.gallery || [];
         setExistingGallery(existingGalleryData);
@@ -346,6 +355,13 @@ export default function EventUploader() {
       } catch (error) {
         throw new Error("El flyer no se pudo procesar: " + error.message);
       }
+
+      let pdfUrl;
+      try {
+        pdfUrl = await uploadPdfFile(eventId);
+      } catch (error) {
+        throw new Error("El PDF no se pudo procesar: " + error.message);
+      }
   
       let galleryData = [];
       try {
@@ -385,6 +401,7 @@ export default function EventUploader() {
         banner: bannerUrl,
         flyer: flyerUrl,
         gallery: galleryData,
+        pdf_link: pdfUrl,
         dates: sanitizedDates.map((entry) => ({
           date: Timestamp.fromDate(new Date(entry.date)),
           time: entry.time,
@@ -762,6 +779,53 @@ export default function EventUploader() {
     }
   };
 
+  const uploadPdfFile = async (eventId) => {
+    if (!pdfFile) return formData.pdf_link || "";
+
+    try {
+      const pdfRef = ref(storage, `events/${eventId}/pdf/${eventId}_pdf`);
+      await uploadBytes(pdfRef, pdfFile);
+      return await getDownloadURL(pdfRef);
+    } catch (error) {
+      console.error("Error uploading PDF:", error);
+      throw new Error("No se pudo subir el archivo PDF");
+    }
+  };
+
+  const handlePdfFile = (file) => {
+    if (file && file.type === "application/pdf") {
+      setPdfFile(file);
+    } else {
+      setError("Por favor selecciona un archivo PDF valido.");
+    }
+  };
+
+  const handlePdfDragOver = (e) => {
+    e.preventDefault();
+    setIsPdfDragOver(true);
+  };
+
+  const handlePdfDragLeave = (e) => {
+    e.preventDefault();
+    setIsPdfDragOver(false);
+  };
+
+  const handlePdfDrop = (e) => {
+    e.preventDefault();
+    setIsPdfDragOver(false);
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handlePdfFile(files[0]);
+    }
+  };
+
+  const handlePdfFileInputChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handlePdfFile(file);
+    }
+  };
+
   const handleImageDescriptionChange = (index, value) => {
     const updatedDescriptions = [...imageDescriptions];
     updatedDescriptions[index] = value || "";
@@ -867,6 +931,7 @@ const uploadImages = async (eventId) => {
       event_type: [],
       purchase_link: "",
       video_link: "",
+      pdf_link: "",
     });
     setImageDescriptions([]);
     setImagePreviews([]);
@@ -875,6 +940,7 @@ const uploadImages = async (eventId) => {
     setBannerPreview(null);
     setFlyerImage(null);
     setFlyerPreview(null);
+    setPdfFile(null);
     setExistingGallery([]);
     setNewImages([]);
     setDirectorInput("");
@@ -887,6 +953,9 @@ const uploadImages = async (eventId) => {
     }
     if (flyerInputRef.current) {
       flyerInputRef.current.value = "";
+    }
+    if (pdfInputRef.current) {
+      pdfInputRef.current.value = "";
     }
   };
 
@@ -946,6 +1015,7 @@ const uploadImages = async (eventId) => {
 
       const bannerUrl = await uploadBannerImage(eventId);
       const flyerUrl = await uploadFlyerImage(eventId);
+      const pdfUrl = await uploadPdfFile(eventId);
 
       const directorsSanitized = (formData.directors || [])
         .map((entry) => ({
@@ -974,6 +1044,7 @@ const uploadImages = async (eventId) => {
         gallery: galleryData,
         banner: bannerUrl,
         flyer: flyerUrl,
+        pdf_link: pdfUrl,
         dates: sanitizedDates.map((entry) => ({
           date: Timestamp.fromDate(new Date(entry.date)),
           time: entry.time,
@@ -1474,6 +1545,80 @@ const uploadImages = async (eventId) => {
             </div>
           )}
         </div>
+        </div>
+      </div>
+
+      {/* PDF Document Container */}
+      <div>
+        <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.2rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px' }}>Documento (Dossier / Programa)</h3>
+        <div className={styles.artistInfoContainer}>
+          <div className={styles.inputGroup}>
+            <p className={styles.subtitle}>ARCHIVO PDF</p>
+            <div
+              className={`${styles.cvDropZone} ${isPdfDragOver ? styles.dragOver : ""}`}
+              onDragOver={handlePdfDragOver}
+              onDragLeave={handlePdfDragLeave}
+              onDrop={handlePdfDrop}
+              onClick={() => pdfInputRef.current?.click()}
+            >
+              {pdfFile ? (
+                <div className={styles.cvFileSelected}>
+                  <p>{pdfFile.name}</p>
+                  <span>Haz clic o arrastra para cambiar</span>
+                </div>
+              ) : formData.pdf_link ? (
+                <div className={styles.cvFileSelected}>
+                  <p>PDF existente disponible</p>
+                  <span>Sube un nuevo archivo para reemplazarlo</span>
+                </div>
+              ) : (
+                <div className={styles.cvFilePlaceholder}>
+                  <p>Arrastra y suelta un PDF aquí</p>
+                  <p>o haz clic para explorar</p>
+                  <small>Solo archivos PDF</small>
+                </div>
+              )}
+            </div>
+            <input
+              ref={pdfInputRef}
+              type="file"
+              accept=".pdf"
+              onChange={handlePdfFileInputChange}
+              style={{ display: "none" }}
+            />
+            {formData.pdf_link && (
+              <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <a 
+                  href={formData.pdf_link} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: 'underline', color: '#0066cc', fontSize: '0.9rem' }}
+                >
+                  Ver PDF actual
+                </a>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, pdf_link: "" }));
+                    setPdfFile(null);
+                    if (pdfInputRef.current) pdfInputRef.current.value = "";
+                  }}
+                  style={{ 
+                    padding: '0.25rem 0.5rem', 
+                    color: 'red', 
+                    border: '1px solid red', 
+                    backgroundColor: 'transparent',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  Eliminar PDF
+                </button>
+              </div>
+            )}
+            <p className={styles.helpText}>Sube un archivo PDF (como un dossier de prensa o el programa del evento) que los usuarios puedan descargar.</p>
+          </div>
         </div>
       </div>
 

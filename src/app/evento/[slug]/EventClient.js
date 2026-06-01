@@ -20,16 +20,19 @@ import {
 } from "../../../lib/eventUtils";
 
 export default function EventClient({ performance }) {
-  const [imgLoaded, setImgLoaded] = useState(false);
+  const [bannerLoaded, setBannerLoaded] = useState(false);
+  const [flyerLoaded, setFlyerLoaded] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
   const lightboxSlides = useMemo(() => {
     if (!performance) return [];
-    const eventImage = performance.banner || performance.flyer;
     const slides = [];
-    if (eventImage) {
-      slides.push({ src: eventImage, alt: `Flyer del evento ${performance.name || "Actividad"} - Nos Envera` });
+    if (performance.banner) {
+      slides.push({ src: performance.banner, alt: `Banner del evento ${performance.name || "Actividad"} - Nos Envera` });
+    }
+    if (performance.flyer && performance.flyer !== performance.banner) {
+      slides.push({ src: performance.flyer, alt: `Flyer del evento ${performance.name || "Actividad"} - Nos Envera` });
     }
     if (performance.gallery?.length) {
       performance.gallery.forEach((item, i) => {
@@ -99,56 +102,119 @@ export default function EventClient({ performance }) {
 
   if (!performance) return null;
 
-  const eventImage = performance.banner || performance.flyer;
-
   return (
     <>
       <section className={styles.responsiveSection} style={{ display: "flex", flexDirection: "row", gap: "1.5rem", alignItems: "flex-start" }}>
-        {eventImage ? (
+        {performance.banner || performance.flyer ? (
           <div
             className={styles.responsiveImageContainer}
             style={{
               width: "50%",
               flexShrink: 0,
-              backgroundColor: imgLoaded ? "#f0f0f0" : "transparent",
-              backgroundImage: imgLoaded ? "none" : "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
-              backgroundSize: imgLoaded ? "auto" : "200% 100%",
-              animation: imgLoaded ? "none" : "shimmer 1.5s infinite",
-              aspectRatio: imgLoaded ? "auto" : "3 / 4",
-              overflow: "hidden",
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: "var(--border-radius)",
-              transition: "aspect-ratio 0.3s ease",
-              cursor: "pointer",
+              flexDirection: "column",
+              gap: "1.5rem",
             }}
-            onClick={() => { setLightboxIndex(0); setLightboxOpen(true); }}
           >
-            <Image
-              src={eventImage}
-              alt={`Flyer del evento ${performance.name || "Actividad"} - Nos Envera`}
-              onLoad={() => setImgLoaded(true)}
-              width={800}
-              height={1000}
-              sizes="(max-width: 768px) 100vw, 50vw"
-              style={{
-                minWidth: "5rem",
-                width: "100%",
-                height: "auto",
-                objectFit: "contain",
-                display: "block",
-                opacity: imgLoaded ? 1 : 0,
-                transition: "opacity 0.3s ease, transform 0.3s ease",
-                transform: "scale(1)",
-              }}
-              onMouseEnter={(e) => {
-                if (imgLoaded) e.currentTarget.style.transform = "scale(1.02)";
-              }}
-              onMouseLeave={(e) => {
-                if (imgLoaded) e.currentTarget.style.transform = "scale(1)";
-              }}
-            />
+            {performance.banner ? (
+              <div
+                style={{
+                  width: "100%",
+                  backgroundColor: bannerLoaded ? "#f0f0f0" : "transparent",
+                  backgroundImage: bannerLoaded ? "none" : "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
+                  backgroundSize: bannerLoaded ? "auto" : "200% 100%",
+                  animation: bannerLoaded ? "none" : "shimmer 1.5s infinite",
+                  aspectRatio: bannerLoaded ? "auto" : "3 / 4",
+                  overflow: "hidden",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: "var(--border-radius)",
+                  transition: "aspect-ratio 0.3s ease",
+                  cursor: "pointer",
+                }}
+                onClick={() => {
+                  const bannerIdx = lightboxSlides.findIndex(slide => slide.src === performance.banner);
+                  setLightboxIndex(bannerIdx >= 0 ? bannerIdx : 0);
+                  setLightboxOpen(true);
+                }}
+              >
+                <Image
+                  src={performance.banner}
+                  alt={`Banner del evento ${performance.name || "Actividad"} - Nos Envera`}
+                  onLoad={() => setBannerLoaded(true)}
+                  width={800}
+                  height={1000}
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  style={{
+                    minWidth: "5rem",
+                    width: "100%",
+                    height: "auto",
+                    objectFit: "contain",
+                    display: "block",
+                    opacity: bannerLoaded ? 1 : 0,
+                    transition: "opacity 0.3s ease, transform 0.3s ease",
+                    transform: "scale(1)",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (bannerLoaded) e.currentTarget.style.transform = "scale(1.02)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (bannerLoaded) e.currentTarget.style.transform = "scale(1)";
+                  }}
+                />
+              </div>
+            ) : null}
+
+            {performance.flyer && performance.flyer !== performance.banner ? (
+              <div
+                style={{
+                  width: "100%",
+                  backgroundColor: flyerLoaded ? "#f0f0f0" : "transparent",
+                  backgroundImage: flyerLoaded ? "none" : "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
+                  backgroundSize: flyerLoaded ? "auto" : "200% 100%",
+                  animation: flyerLoaded ? "none" : "shimmer 1.5s infinite",
+                  aspectRatio: flyerLoaded ? "auto" : "3 / 4",
+                  overflow: "hidden",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: "var(--border-radius)",
+                  transition: "aspect-ratio 0.3s ease",
+                  cursor: "pointer",
+                }}
+                onClick={() => {
+                  const flyerIdx = lightboxSlides.findIndex(slide => slide.src === performance.flyer);
+                  setLightboxIndex(flyerIdx >= 0 ? flyerIdx : 0);
+                  setLightboxOpen(true);
+                }}
+              >
+                <Image
+                  src={performance.flyer}
+                  alt={`Flyer del evento ${performance.name || "Actividad"} - Nos Envera`}
+                  onLoad={() => setFlyerLoaded(true)}
+                  width={800}
+                  height={1000}
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  style={{
+                    minWidth: "5rem",
+                    width: "100%",
+                    height: "auto",
+                    objectFit: "contain",
+                    display: "block",
+                    opacity: flyerLoaded ? 1 : 0,
+                    transition: "opacity 0.3s ease, transform 0.3s ease",
+                    transform: "scale(1)",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (flyerLoaded) e.currentTarget.style.transform = "scale(1.02)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (flyerLoaded) e.currentTarget.style.transform = "scale(1)";
+                  }}
+                />
+              </div>
+            ) : null}
           </div>
         ) : null}
 
@@ -225,7 +291,7 @@ export default function EventClient({ performance }) {
             </div>
           ) : null}
 
-          {(performance.address || performance.googleMapsLink || performance.purchaseLink) ? (
+          {(performance.address || performance.googleMapsLink || performance.purchaseLink || performance.pdfLink) ? (
             <div style={{ textAlign: "left", alignSelf: "flex-start" }}>
               <h2 style={{ fontSize: "1.1rem", textTransform: "uppercase", letterSpacing: "0.5px", textAlign: "left" }}>Ubicación</h2>
               {performance.address ? (
@@ -251,26 +317,50 @@ export default function EventClient({ performance }) {
                   Ver en Google Maps
                 </a>
               ) : null}
-              {performance.purchaseLink ? (
-                <a
-                  href={performance.purchaseLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "inline-block",
-                    marginTop: "0.75rem",
-                    padding: "0.6rem 1.2rem",
-                    backgroundColor: "#111",
-                    color: "#fff",
-                    textDecoration: "none",
-                    letterSpacing: "0.5px",
-                    fontSize: "0.85rem",
-                    textTransform: "uppercase",
-                    textAlign: "left",
-                  }}
-                >
-                  Más Información / Entradas
-                </a>
+              {(performance.purchaseLink || performance.pdfLink) ? (
+                <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginTop: "0.75rem" }}>
+                  {performance.purchaseLink ? (
+                    <a
+                      href={performance.purchaseLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: "inline-block",
+                        padding: "0.6rem 1.2rem",
+                        backgroundColor: "#111",
+                        color: "#fff",
+                        textDecoration: "none",
+                        letterSpacing: "0.5px",
+                        fontSize: "0.85rem",
+                        textTransform: "uppercase",
+                        textAlign: "left",
+                      }}
+                    >
+                      Más Información / Entradas
+                    </a>
+                  ) : null}
+                  {performance.pdfLink ? (
+                    <a
+                      href={performance.pdfLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: "inline-block",
+                        padding: "0.6rem 1.2rem",
+                        border: "1px solid #111",
+                        color: "#111",
+                        backgroundColor: "transparent",
+                        textDecoration: "none",
+                        letterSpacing: "0.5px",
+                        fontSize: "0.85rem",
+                        textTransform: "uppercase",
+                        textAlign: "left",
+                      }}
+                    >
+                      BASES Y CONDICIONES
+                    </a>
+                  ) : null}
+                </div>
               ) : null}
             </div>
           ) : null}
@@ -318,10 +408,20 @@ export default function EventClient({ performance }) {
                   gap: "0.75rem",
                   cursor: "pointer",
                 }}
-                onClick={() => { setLightboxIndex(index + 1); setLightboxOpen(true); }}
+                onClick={() => {
+                  const imgIdx = lightboxSlides.findIndex(slide => slide.src === item.url);
+                  setLightboxIndex(imgIdx >= 0 ? imgIdx : 0);
+                  setLightboxOpen(true);
+                }}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && (setLightboxIndex(index + 1), setLightboxOpen(true))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const imgIdx = lightboxSlides.findIndex(slide => slide.src === item.url);
+                    setLightboxIndex(imgIdx >= 0 ? imgIdx : 0);
+                    setLightboxOpen(true);
+                  }
+                }}
                 aria-label={`Ver imagen ${index + 1} en galería`}
               >
                 <Image

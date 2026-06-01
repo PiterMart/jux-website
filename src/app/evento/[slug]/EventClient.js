@@ -336,7 +336,7 @@ export default function EventClient({ performance }) {
                         textAlign: "left",
                       }}
                     >
-                      Más Información / Entradas
+                      FORMULARIO DE INSCRIPCION
                     </a>
                   ) : null}
                   {performance.pdfLink ? (

@@ -8,7 +8,6 @@ import Video from "../components/Video";
 import HomepageAgenda from "../components/HomepageAgenda";
 import HomepageIntro from "../components/HomepageIntro";
 import SalaRedirect from "../components/SalaRedirect";
-import Popup from "../components/Popup";
 
 export const metadata = {
   title: "Nos En Vera",
@@ -35,7 +34,6 @@ export default function Home() {
         </div>
         <SalaRedirect />
       </main>
-      <Popup />
     </div>
   );
 }

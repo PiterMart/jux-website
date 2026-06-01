@@ -6,13 +6,14 @@ import LoadingProvider from "../components/LoadingProvider";
 import PageTransitionProvider from "../components/PageTransitionProvider";
 import PageTransitionWrapper from "../components/PageTransitionWrapper";
 import ScrollToTop from "../components/ScrollToTop";
+import Popup from "../components/Popup";
 
 export const metadata = {
   title: {
     template: "%s | Nos en Vera",
     default: "Nos en Vera | Espacio de Performance y Creación",
   },
-  description: "Espacio de arte y cultura dedicado a la promoción de artistas emergentes, la investigación y la experimentación en el campo de la performance.",
+  description: "Espacio de arte y cultura dedicado a la promoción de artists emergentes, la investigación y la experimentación en el campo de la performance.",
   keywords: ["performance", "arte", "cultura", "investigación artística", "artistas emergentes", "Buenos Aires"],
   metadataBase: new URL("https://www.nosenvera.com"),
   alternates: {
@@ -44,7 +45,7 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
         <link rel="preconnect" href="https://firestore.googleapis.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
+        <link rel="dns-prefetch" href="https://firestore.gstatic.com" />
 
         {/* Google Fonts — loaded as <link> instead of CSS @import to avoid render-blocking */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -73,17 +74,18 @@ export default function RootLayout({ children }) {
           <PageTransitionProvider>
             <ScrollToTop />
             <Nav />
-          <div className="appGrid">
-            <main className="mainContent">
-              <PageTransitionWrapper>
-                {children}
-              </PageTransitionWrapper>
-              <div>
-                {/* <RecentEvents /> */}
-                <Footer />
-              </div>
-            </main>
-          </div>
+            <div className="appGrid">
+              <main className="mainContent">
+                <PageTransitionWrapper>
+                  {children}
+                </PageTransitionWrapper>
+                <div>
+                  {/* <RecentEvents /> */}
+                  <Footer />
+                </div>
+              </main>
+            </div>
+            <Popup />
           </PageTransitionProvider>
         </LoadingProvider>
       </body>

@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import { TransitionLink } from "./TransitionLink";
 import AnimatedUnderline from "./AnimatedUnderline";
 import { formatDate } from "../lib/eventUtils";
+import { useCursorHoverImage } from "../hooks/useCursorHoverImage";
 
 const MONTH_PLACEHOLDER = "—";
 
@@ -113,9 +114,15 @@ const dateStyles = {
 
 export default function AgendaList({ events, basePath = "/evento" }) {
   const groups = useMemo(() => groupByMonth(events), [events]);
+  const { showCursorImage, hideCursorImage, renderCursorPortal } = useCursorHoverImage({
+    items: events,
+    active: true,
+    imageUrlKey: "imageUrl"
+  });
 
   return (
     <section style={listContainerStyles}>
+      {renderCursorPortal()}
       {groups.map(([month, groupEvents], idx) => (
         <div key={month} style={{ width: "100%", marginTop: idx === 0 ? 0 : "2rem" }}>
 
@@ -179,6 +186,8 @@ export default function AgendaList({ events, basePath = "/evento" }) {
                   href={`${basePath}/${event.slug}`}
                   style={{ textDecoration: "none", width: "100%" }}
                   className="agendaLinkHover"
+                  onMouseEnter={event.imageUrl ? () => showCursorImage(event.imageUrl) : undefined}
+                  onMouseLeave={hideCursorImage}
                 >
                   <article style={{ ...agendaItemStyles, borderBottom: isLastItem ? "none" : "1px solid black" }}>
                     <div style={{ display: "flex", flexDirection: "row", alignItems: "flex-end", gap: "1.5rem", width: "100%" }}>

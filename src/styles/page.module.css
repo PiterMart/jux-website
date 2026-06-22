@@ -290,27 +290,13 @@
   padding-bottom: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0rem;
+  gap: 1rem;
   font-size: 0.95rem;
   color: #333;
   align-items: flex-start;
 }
 
-@media (min-width: 768px) {
-  .notasGrid {
-    grid-template-columns: 1fr 1fr;
-    gap: 0;
-  }
 
-  .notaItem:nth-child(odd) {
-    border-right: 1px solid black;
-    padding-right: 3rem;
-  }
-
-  .notaItem:nth-child(even) {
-    padding-left: 3rem;
-  }
-}
 
 @media (min-width: 1000px) {
   .notaContent {

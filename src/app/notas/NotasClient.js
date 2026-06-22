@@ -101,24 +101,24 @@ export default function NotasClient({ initialNotas }) {
                     color: "black",
                   }}
                 >
-                  <span
+                  <h3
                     className={`${styles.sectionSubtitle} ${visibleSubtitles.has(`subtitle-${notaItem.id}`)
-                        ? styles.sectionSubtitleVisible
-                        : ""
+                      ? styles.sectionSubtitleVisible
+                      : ""
                       }`}
                     data-subtitle-id={`subtitle-${notaItem.id}`}
                     style={{
                       display: "block",
                       fontFamily: "var(--font-grid-card)",
                       fontStyle: "italic",
-                      fontSize: "1.1rem",
+                      fontSize: "1.75rem",
                       fontWeight: 600,
                       letterSpacing: "0.5px",
                       lineHeight: "1.3",
                     }}
                   >
                     {notaItem.title}
-                  </span>
+                  </h3>
                 </div>
 
                 <div className={styles.notaContent}>

@@ -85,7 +85,7 @@ export default function RootLayout({ children }) {
                 </div>
               </main>
             </div>
-            <Popup />
+            {/* <Popup /> */}
           </PageTransitionProvider>
         </LoadingProvider>
       </body>

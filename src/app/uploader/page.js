@@ -12,6 +12,7 @@ import EventList from "../firebase/EventList";
 import ArticlesList from "../firebase/ArticlesList";
 import NotasUploader from "../firebase/NotasUploader";
 import NotasList from "../firebase/NotasList";
+import HighlightsOrder from "../firebase/HighlightsOrder";
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState("community");
@@ -121,6 +122,7 @@ export default function Home() {
           <div className={styles.navGroup}>
             <button onClick={() => setActiveSection("events")} className={styles.navButton}>EVENTOS</button>
             <button onClick={() => setActiveSection("eventsList")} className={styles.navButton}>Lista de Eventos</button>
+            <button onClick={() => setActiveSection("highlightsOrder")} className={styles.navButton}>Destacados</button>
           </div>
           <div className={styles.navGroup}>
             <button onClick={() => setActiveSection("features")} className={styles.navButton}>NOTAS</button>
@@ -157,6 +159,13 @@ export default function Home() {
           <div id="events-list" style={{ width: "100%", padding: "1rem", display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "1000px", margin: "auto" }}>
             <p className={styles.title}>LISTA DE EVENTOS</p>
             <EventList />
+          </div>
+        )}
+
+        {/* Highlights Order Section */}
+        {activeSection === "highlightsOrder" && (
+          <div id="highlights-order" style={{ width: "100%", padding: "1rem", display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "1000px", margin: "auto" }}>
+            <HighlightsOrder />
           </div>
         )}
 

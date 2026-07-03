@@ -84,8 +84,17 @@ export default function Highlights() {
             title,
             slug,
             imageUrl,
-            formattedDate
+            formattedDate,
+            featuredOrder: typeof eventDoc.featuredOrder === "number" ? eventDoc.featuredOrder : Infinity,
           };
+        });
+
+        // Sort by featuredOrder ascending, then by title alphabetically
+        processed.sort((a, b) => {
+          if (a.featuredOrder !== b.featuredOrder) {
+            return a.featuredOrder - b.featuredOrder;
+          }
+          return a.title.localeCompare(b.title);
         });
 
         setFeaturedEvents(processed);

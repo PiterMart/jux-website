@@ -1068,3 +1068,127 @@
     padding: 0.75rem;
   }
 }
+
+/* Highlights Order Styles */
+.highlightsOrderList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.highlightOrderItem {
+  display: flex;
+  align-items: center;
+  border: 1px solid gray;
+  padding: 1rem;
+  background-color: transparent;
+  gap: 1.5rem;
+  transition: all 0.2s ease;
+  user-select: none;
+  cursor: grab;
+}
+
+.highlightOrderItem:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+  border-color: #333;
+}
+
+.highlightOrderItem:active {
+  cursor: grabbing;
+}
+
+.highlightOrderItem.dragging {
+  opacity: 0.4;
+  border-style: dashed;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dragHandle {
+  color: #888;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  transition: color 0.2s ease;
+}
+
+.dragHandle:hover {
+  color: #333;
+}
+
+.highlightOrderThumbnail {
+  width: 90px;
+  height: 120px;
+  flex-shrink: 0;
+  border: 1px solid #ddd;
+  overflow: hidden;
+  position: relative;
+  background-color: #f5f5f5;
+}
+
+.highlightOrderThumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.highlightOrderItemDetails {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.highlightOrderIndex {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #999;
+  text-transform: uppercase;
+}
+
+.highlightOrderName {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+}
+
+.highlightOrderId {
+  font-size: 0.75rem;
+  color: #888;
+  font-family: monospace;
+}
+
+.highlightOrderActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.moveButton {
+  background: transparent;
+  border: 1px solid gray;
+  color: #333;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.moveButton:hover:not(:disabled) {
+  background-color: #333;
+  color: white;
+  border-color: #333;
+}
+
+.moveButton:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+

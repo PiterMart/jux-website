@@ -27,6 +27,7 @@ export default function EventUploader() {
     subtitle: "",
     description: [],
     isFeatured: false,
+    featuredOrder: null,
     directors: [],
     artists: [],
     dates: [{ date: null, time: "" }],
@@ -269,6 +270,7 @@ export default function EventUploader() {
           subtitle: data.subtitle || "",
           description: data.description || [],
           isFeatured: data.isFeatured || false,
+          featuredOrder: data.featuredOrder !== undefined ? data.featuredOrder : null,
           dates:
             fallbackDates.filter((entry) => entry.date instanceof Date && !isNaN(entry.date.getTime())).length > 0
               ? fallbackDates.map((entry) => ({
@@ -922,6 +924,7 @@ const uploadImages = async (eventId) => {
       subtitle: "",
       description: [],
       isFeatured: false,
+      featuredOrder: null,
       directors: [],
       artists: [],
       dates: [{ date: null, time: "" }],

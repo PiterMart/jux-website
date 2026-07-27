@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { getDoc, doc } from "firebase/firestore";
 import { firestore } from "../../firebase/firebaseConfig";
+import { formatDateDisplay } from "../../firebase/dateUtils";
 import pageStyles from "../../../styles/page.module.css";
 
 export async function generateMetadata({ params }) {
@@ -73,7 +74,7 @@ export default async function ExhibitionDetailPage({ params }) {
         <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", color: "#666", fontSize: "1rem", marginTop: "1.5rem" }}>
           {(exhibition.startDate || exhibition.endDate) && (
             <div>
-              <strong>Fechas:</strong> {exhibition.startDate} {exhibition.endDate ? `— ${exhibition.endDate}` : ""}
+              <strong>Fechas:</strong> {formatDateDisplay(exhibition.startDate)} {exhibition.endDate ? `— ${formatDateDisplay(exhibition.endDate)}` : ""}
             </div>
           )}
           {exhibition.location && (

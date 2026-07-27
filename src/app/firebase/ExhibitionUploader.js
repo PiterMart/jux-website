@@ -8,7 +8,8 @@ import imageCompression from "browser-image-compression";
 import SearchableDropdown from "../../components/SearchableDropdown";
 import { syncExhibitionRelations } from "./relationalSync";
 import { logCreate, logUpdate, logDelete, RESOURCE_TYPES } from "./activityLogger";
-import { sanitizeFilename, safeCompressImage, formatUploadError } from "./uploadUtils";
+import { sanitizeFilename, safeCompressImage, formatUploadError, safeUploadFile } from "./uploadUtils";
+import { toInputDate, calculateExhibitionStatus, toFirestoreTimestamp } from "./dateUtils";
 import styles from "../../styles/uploader.module.css";
 
 export default function ExhibitionUploader() {
@@ -23,7 +24,6 @@ export default function ExhibitionUploader() {
   const [formData, setFormData] = useState({
     title: "",
     subtitle: "",
-    status: "actual",
     startDate: "",
     endDate: "",
     location: "Sala Principal",
@@ -80,12 +80,14 @@ export default function ExhibitionUploader() {
     const exDoc = await getDoc(doc(firestore, "exhibitions", id));
     if (exDoc.exists()) {
       const d = exDoc.data();
+      const startStr = toInputDate(d.startDate || d.startTimestamp);
+      const endStr = toInputDate(d.endDate || d.endTimestamp);
+
       setFormData({
         title: d.title || "",
         subtitle: d.subtitle || "",
-        status: d.status || "actual",
-        startDate: d.startDate || "",
-        endDate: d.endDate || "",
+        startDate: startStr,
+        endDate: endStr,
         location: d.location || "",
         curator: d.curator || "",
         descriptionText: Array.isArray(d.description) ? d.description.join("\n\n") : d.description || "",
@@ -107,7 +109,6 @@ export default function ExhibitionUploader() {
     setFormData({
       title: "",
       subtitle: "",
-      status: "actual",
       startDate: "",
       endDate: "",
       location: "Sala Principal",
@@ -210,18 +211,24 @@ export default function ExhibitionUploader() {
           useWebWorker: true,
         });
         const safeName = sanitizeFilename(coverFile.name);
-        const imgRef = ref(storage, `exhibitions/${id}/cover_${Date.now()}_${safeName}`);
-        await uploadBytes(imgRef, compressed, { contentType: coverFile.type || "image/jpeg" });
-        coverImageUrl = await getDownloadURL(imgRef);
+        const primaryPath = `exhibitions/${id}/cover_${Date.now()}_${safeName}`;
+        const fallbackPath = `events/${id}/images/cover_${Date.now()}_${safeName}`;
+        coverImageUrl = await safeUploadFile(primaryPath, compressed, {
+          contentType: coverFile.type || "image/jpeg",
+          fallbackPath,
+        });
       }
 
       // 2. PDF Catalog Upload
       let finalPdfUrl = pdfUrl;
       if (pdfFile) {
         const safePdfName = sanitizeFilename(pdfFile.name);
-        const pdfStorageRef = ref(storage, `exhibitions/${id}/catalog_${Date.now()}_${safePdfName}`);
-        await uploadBytes(pdfStorageRef, pdfFile, { contentType: "application/pdf" });
-        finalPdfUrl = await getDownloadURL(pdfStorageRef);
+        const primaryPath = `exhibitions/${id}/catalog_${Date.now()}_${safePdfName}`;
+        const fallbackPath = `events/${id}/pdf/catalog_${Date.now()}_${safePdfName}`;
+        finalPdfUrl = await safeUploadFile(primaryPath, pdfFile, {
+          contentType: "application/pdf",
+          fallbackPath,
+        });
       }
 
       // 3. New Gallery Uploads
@@ -234,9 +241,12 @@ export default function ExhibitionUploader() {
           useWebWorker: true,
         });
         const safeName = sanitizeFilename(file.name || `gallery_${i}.jpg`);
-        const gRef = ref(storage, `exhibitions/${id}/gallery_${Date.now()}_${i}_${safeName}`);
-        await uploadBytes(gRef, compressed, { contentType: file.type || "image/jpeg" });
-        const url = await getDownloadURL(gRef);
+        const primaryPath = `exhibitions/${id}/gallery_${Date.now()}_${i}_${safeName}`;
+        const fallbackPath = `events/${id}/gallery/gallery_${Date.now()}_${i}_${safeName}`;
+        const url = await safeUploadFile(primaryPath, compressed, {
+          contentType: file.type || "image/jpeg",
+          fallbackPath,
+        });
         uploadedGallery.push({ url, description: "" });
       }
 
@@ -253,12 +263,18 @@ export default function ExhibitionUploader() {
         .filter((art) => formData.selectedArtworkIds.includes(art.id))
         .map((art) => ({ id: art.id, title: art.title, image: art.coverImage }));
 
+      const startTs = toFirestoreTimestamp(formData.startDate);
+      const endTs = toFirestoreTimestamp(formData.endDate);
+      const autoStatus = formData.status || calculateExhibitionStatus(formData.startDate, formData.endDate);
+
       const payload = {
         title: formData.title.trim(),
         subtitle: formData.subtitle.trim(),
-        status: formData.status,
+        status: autoStatus,
         startDate: formData.startDate.trim(),
         endDate: formData.endDate.trim(),
+        startTimestamp: startTs,
+        endTimestamp: endTs,
         location: formData.location.trim(),
         curator: formData.curator.trim(),
         description: descriptionArray,
@@ -337,11 +353,15 @@ export default function ExhibitionUploader() {
             style={{ flex: 1 }}
           >
             <option value="">-- Crear Nueva Exhibición --</option>
-            {exhibitions.map((ex) => (
-              <option key={ex.id} value={ex.id}>
-                {ex.title} ({ex.status === "actual" ? "En curso" : ex.status === "proxima" ? "Próxima" : "Pasada"})
-              </option>
-            ))}
+            {exhibitions.map((ex) => {
+              const st = calculateExhibitionStatus(ex.startDate, ex.endDate);
+              const label = st === "actual" ? "En curso" : st === "proxima" ? "Próxima" : "Pasada";
+              return (
+                <option key={ex.id} value={ex.id}>
+                  {ex.title} ({label})
+                </option>
+              );
+            })}
           </select>
           {selectedId && (
             <button onClick={resetForm} className={styles.loginButton} style={{ width: "auto", padding: "0.5rem 1rem", backgroundColor: "#666" }}>
@@ -374,27 +394,13 @@ export default function ExhibitionUploader() {
           />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
-          <div>
-            <p className={styles.helpText}>Estado de la Exhibición</p>
-            <select
-              value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              className={styles.input}
-            >
-              <option value="actual">En curso (Actual)</option>
-              <option value="pasada">Pasada (Archivo)</option>
-              <option value="proxima">Próxima</option>
-            </select>
-          </div>
-
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
           <div>
             <p className={styles.helpText}>Fecha de Inicio</p>
             <input
-              type="text"
+              type="date"
               value={formData.startDate}
               onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-              placeholder="Ej: 15 Marzo 2025"
               className={styles.input}
             />
           </div>
@@ -402,14 +408,26 @@ export default function ExhibitionUploader() {
           <div>
             <p className={styles.helpText}>Fecha de Cierre</p>
             <input
-              type="text"
+              type="date"
               value={formData.endDate}
               onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-              placeholder="Ej: 30 Mayo 2025"
               className={styles.input}
             />
           </div>
         </div>
+
+        {(formData.startDate || formData.endDate) && (
+          <div style={{ fontSize: "0.85rem", color: "#666", marginTop: "-0.25rem", padding: "0.5rem 0.75rem", backgroundColor: "#f8f9fa", borderRadius: "4px", borderLeft: "3px solid #111" }}>
+            Estado detectado automáticamente:{" "}
+            <strong style={{ textTransform: "uppercase", color: "#000" }}>
+              {calculateExhibitionStatus(formData.startDate, formData.endDate) === "actual"
+                ? "En Curso (Agenda)"
+                : calculateExhibitionStatus(formData.startDate, formData.endDate) === "proxima"
+                ? "Próximamente"
+                : "Pasada (Archivo)"}
+            </strong>
+          </div>
+        )}
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
           <div>

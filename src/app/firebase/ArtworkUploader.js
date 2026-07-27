@@ -8,7 +8,7 @@ import imageCompression from "browser-image-compression";
 import SearchableDropdown from "../../components/SearchableDropdown";
 import { syncArtworkRelations } from "./relationalSync";
 import { logCreate, logUpdate, logDelete, RESOURCE_TYPES } from "./activityLogger";
-import { sanitizeFilename, safeCompressImage, formatUploadError } from "./uploadUtils";
+import { sanitizeFilename, safeCompressImage, formatUploadError, safeUploadFile } from "./uploadUtils";
 import styles from "../../styles/uploader.module.css";
 
 const AVAILABILITY_OPTIONS = [
@@ -197,9 +197,9 @@ export default function ArtworkUploader() {
           useWebWorker: true,
         });
         const safeName = sanitizeFilename(coverFile.name);
-        const imgRef = ref(storage, `artworks/${id}/cover_${Date.now()}_${safeName}`);
-        await uploadBytes(imgRef, compressed, { contentType: coverFile.type || "image/jpeg" });
-        coverImageUrl = await getDownloadURL(imgRef);
+        coverImageUrl = await safeUploadFile(`artworks/${id}/cover_${Date.now()}_${safeName}`, compressed, {
+          contentType: coverFile.type || "image/jpeg",
+        });
       }
 
       // 2. Upload New Detail Images
@@ -212,9 +212,9 @@ export default function ArtworkUploader() {
           useWebWorker: true,
         });
         const safeName = sanitizeFilename(file.name || `detail_${i}.jpg`);
-        const dRef = ref(storage, `artworks/${id}/detail_${Date.now()}_${i}_${safeName}`);
-        await uploadBytes(dRef, compressed, { contentType: file.type || "image/jpeg" });
-        const url = await getDownloadURL(dRef);
+        const url = await safeUploadFile(`artworks/${id}/detail_${Date.now()}_${i}_${safeName}`, compressed, {
+          contentType: file.type || "image/jpeg",
+        });
         finalDetailUrls.push(url);
       }
 

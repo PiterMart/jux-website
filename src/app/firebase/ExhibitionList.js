@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { firestore } from "./firebaseConfig";
 import { getDocs, collection } from "firebase/firestore";
+import { calculateExhibitionStatus, formatDateDisplay } from "./dateUtils";
 import styles from "../../styles/uploader.module.css";
 
 export default function ExhibitionList() {
@@ -12,7 +13,20 @@ export default function ExhibitionList() {
     const fetchExhibitions = async () => {
       try {
         const snap = await getDocs(collection(firestore, "exhibitions"));
-        const list = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const list = snap.docs.map((doc) => {
+          const data = doc.data();
+          const startStr = data.startDate || (data.startTimestamp?.seconds ? new Date(data.startTimestamp.seconds * 1000).toISOString().split('T')[0] : '');
+          const endStr = data.endDate || (data.endTimestamp?.seconds ? new Date(data.endTimestamp.seconds * 1000).toISOString().split('T')[0] : '');
+          const autoStatus = data.status || calculateExhibitionStatus(startStr, endStr);
+
+          return {
+            id: doc.id,
+            ...data,
+            startDate: startStr,
+            endDate: endStr,
+            status: autoStatus,
+          };
+        });
         list.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
         setExhibitions(list);
       } catch (e) {
@@ -45,7 +59,9 @@ export default function ExhibitionList() {
                   {ex.location ? ` • ${ex.location}` : ""}
                 </p>
                 {(ex.startDate || ex.endDate) && (
-                  <p className={styles.artistId} style={{ margin: 0 }}>Fechas: {ex.startDate} - {ex.endDate}</p>
+                  <p className={styles.artistId} style={{ margin: 0 }}>
+                    Fechas: {formatDateDisplay(ex.startDate)} {ex.endDate ? `- ${formatDateDisplay(ex.endDate)}` : ""}
+                  </p>
                 )}
               </div>
             </div>

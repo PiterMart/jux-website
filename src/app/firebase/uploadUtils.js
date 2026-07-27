@@ -1,4 +1,54 @@
 import imageCompression from "browser-image-compression";
+import { getAuth, signInAnonymously } from "firebase/auth";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { app } from "./firebaseConfig";
+import { storage } from "./firebaseStorage";
+
+let authInstance = null;
+
+/**
+ * Ensures a Firebase Auth user session exists (signing in anonymously if needed)
+ * to satisfy Firebase Storage rules requiring request.auth != null.
+ */
+export async function ensureAuth() {
+  try {
+    if (typeof window !== "undefined") {
+      if (!authInstance) {
+        authInstance = getAuth(app);
+      }
+      if (!authInstance.currentUser) {
+        await signInAnonymously(authInstance);
+      }
+    }
+  } catch (err) {
+    console.warn("Autenticación anónima omitida:", err?.message || err);
+  }
+}
+
+/**
+ * Uploads a file safely to Firebase Storage with anonymous auth check
+ * and optional fallback path if storage/unauthorized is encountered.
+ */
+export async function safeUploadFile(primaryPath, file, options = {}) {
+  await ensureAuth();
+  const metadata = options.contentType ? { contentType: options.contentType } : { contentType: file.type || "image/jpeg" };
+  const fallbackPath = options.fallbackPath;
+
+  try {
+    const fileRef = ref(storage, primaryPath);
+    await uploadBytes(fileRef, file, metadata);
+    return await getDownloadURL(fileRef);
+  } catch (err) {
+    const errStr = String(err?.message || err?.code || err);
+    if ((errStr.includes("unauthorized") || errStr.includes("permission-denied")) && fallbackPath) {
+      console.warn(`Carga en ${primaryPath} no autorizada. Reintentando en ruta de respaldo ${fallbackPath}...`);
+      const fallbackRef = ref(storage, fallbackPath);
+      await uploadBytes(fallbackRef, file, metadata);
+      return await getDownloadURL(fallbackRef);
+    }
+    throw err;
+  }
+}
 
 /**
  * Sanitizes a file name removing non-ASCII characters, accents, spaces, and dangerous URL symbols.
@@ -44,7 +94,7 @@ export function formatUploadError(e) {
     return "Error al subir el archivo: El servidor de almacenamiento agotó el tiempo de espera. Verifica tu conexión a internet o intenta con una imagen en formato JPG, PNG o WEBP.";
   }
   if (msg.includes("unauthorized") || msg.includes("permission-denied")) {
-    return "No tienes permisos de almacenamiento en Firebase Storage. Verifica tu sesión.";
+    return "Error de permisos en Firebase Storage (storage/unauthorized). Se intentó la autenticación y la ruta de respaldo. Verifica las reglas de seguridad en Firebase Console.";
   }
   if (msg.includes("quota-exceeded")) {
     return "Se ha superado la cuota disponible en el servidor de almacenamiento.";

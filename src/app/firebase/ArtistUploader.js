@@ -7,7 +7,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import imageCompression from "browser-image-compression";
 import SearchableDropdown from "../../components/SearchableDropdown";
 import { logCreate, logUpdate, logDelete, RESOURCE_TYPES } from "./activityLogger";
-import { sanitizeFilename, safeCompressImage, formatUploadError } from "./uploadUtils";
+import { sanitizeFilename, safeCompressImage, formatUploadError, safeUploadFile } from "./uploadUtils";
 import styles from "../../styles/uploader.module.css";
 
 export default function ArtistUploader() {
@@ -141,18 +141,18 @@ export default function ArtistUploader() {
           useWebWorker: true,
         });
         const safeName = sanitizeFilename(imageFile.name);
-        const imgRef = ref(storage, `artists/${id}/profile_${Date.now()}_${safeName}`);
-        await uploadBytes(imgRef, compressed, { contentType: imageFile.type || "image/jpeg" });
-        profilePictureUrl = await getDownloadURL(imgRef);
+        profilePictureUrl = await safeUploadFile(`artists/${id}/profile_${Date.now()}_${safeName}`, compressed, {
+          contentType: imageFile.type || "image/jpeg",
+        });
       }
 
       // 2. CV PDF upload
       let finalCvUrl = cvUrl;
       if (cvFile) {
         const safeCvName = sanitizeFilename(cvFile.name);
-        const cvStorageRef = ref(storage, `artists/${id}/cv_${Date.now()}_${safeCvName}`);
-        await uploadBytes(cvStorageRef, cvFile, { contentType: "application/pdf" });
-        finalCvUrl = await getDownloadURL(cvStorageRef);
+        finalCvUrl = await safeUploadFile(`artists/${id}/cv_${Date.now()}_${safeCvName}`, cvFile, {
+          contentType: "application/pdf",
+        });
       }
 
       const bioArray = formData.bioText

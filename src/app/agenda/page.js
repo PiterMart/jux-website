@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { collection, getDocs } from "firebase/firestore";
 import { firestore } from "../firebase/firebaseConfig";
+import { calculateExhibitionStatus, formatDateDisplay } from "../firebase/dateUtils";
 import styles from "../../styles/page.module.css";
 
 export const metadata = {
@@ -14,12 +15,30 @@ export const revalidate = 60; // revalidate every 60 seconds
 async function getGalleryAgenda() {
   try {
     const snap = await getDocs(collection(firestore, "exhibitions"));
-    const list = snap.docs.map((d) => ({ id: d.id, ...JSON.parse(JSON.stringify(d.data())) }));
+    const list = snap.docs.map((d) => {
+      const data = d.data();
+      const startStr = data.startDate || (data.startTimestamp?.seconds ? new Date(data.startTimestamp.seconds * 1000).toISOString().split('T')[0] : '');
+      const endStr = data.endDate || (data.endTimestamp?.seconds ? new Date(data.endTimestamp.seconds * 1000).toISOString().split('T')[0] : '');
+      const autoStatus = calculateExhibitionStatus(startStr, endStr);
 
-    // Filter active and upcoming exhibitions/events
+      return {
+        id: d.id,
+        ...JSON.parse(JSON.stringify(data)),
+        startDate: startStr,
+        endDate: endStr,
+        status: data.status || autoStatus,
+      };
+    });
+
+    // Filter and sort active and upcoming exhibitions/events by status and start timestamp
     return list.sort((a, b) => {
       const statusOrder = { actual: 0, proxima: 1, pasada: 2 };
-      return (statusOrder[a.status] ?? 2) - (statusOrder[b.status] ?? 2);
+      const orderDiff = (statusOrder[a.status] ?? 2) - (statusOrder[b.status] ?? 2);
+      if (orderDiff !== 0) return orderDiff;
+
+      const timeA = a.startTimestamp?.seconds || (a.startDate ? new Date(a.startDate).getTime() : 0);
+      const timeB = b.startTimestamp?.seconds || (b.startDate ? new Date(b.startDate).getTime() : 0);
+      return timeB - timeA;
     });
   } catch (err) {
     console.error("Error fetching gallery agenda:", err);
@@ -96,7 +115,7 @@ export default async function AgendaPage() {
 
                   {(item.startDate || item.endDate) && (
                     <p style={{ fontSize: "0.9rem", color: "#444" }}>
-                      📅 <strong>Fechas:</strong> {item.startDate} {item.endDate ? `— ${item.endDate}` : ""}
+                      📅 <strong>Fechas:</strong> {formatDateDisplay(item.startDate)} {item.endDate ? `— ${formatDateDisplay(item.endDate)}` : ""}
                     </p>
                   )}
 

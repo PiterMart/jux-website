@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { getDocs, collection } from "firebase/firestore";
 import { firestore } from "../firebase/firebaseConfig";
+import { calculateExhibitionStatus, formatDateDisplay } from "../firebase/dateUtils";
 import pageStyles from "../../styles/page.module.css";
 
 export const metadata = {
@@ -14,10 +15,20 @@ export const revalidate = 60; // revalidate every 60 seconds
 async function getExhibitions() {
   try {
     const snap = await getDocs(collection(firestore, "exhibitions"));
-    const list = snap.docs.map((doc) => ({
-      id: doc.id,
-      ...JSON.parse(JSON.stringify(doc.data())),
-    }));
+    const list = snap.docs.map((doc) => {
+      const data = doc.data();
+      const startStr = data.startDate || (data.startTimestamp?.seconds ? new Date(data.startTimestamp.seconds * 1000).toISOString().split('T')[0] : '');
+      const endStr = data.endDate || (data.endTimestamp?.seconds ? new Date(data.endTimestamp.seconds * 1000).toISOString().split('T')[0] : '');
+      const autoStatus = data.status || calculateExhibitionStatus(startStr, endStr);
+
+      return {
+        id: doc.id,
+        ...JSON.parse(JSON.stringify(data)),
+        startDate: startStr,
+        endDate: endStr,
+        status: autoStatus,
+      };
+    });
     return list;
   } catch (error) {
     console.error("Error fetching exhibitions:", error);
@@ -73,7 +84,7 @@ export default async function ExhibicionesPage() {
                   {ex.subtitle && <p style={{ fontSize: "1.1rem", color: "#555", fontStyle: "italic", marginBottom: "0.5rem" }}>{ex.subtitle}</p>}
                   {(ex.startDate || ex.endDate) && (
                     <p style={{ fontSize: "0.95rem", color: "#777", fontWeight: "600" }}>
-                      {ex.startDate} {ex.endDate ? `— ${ex.endDate}` : ""}
+                      {formatDateDisplay(ex.startDate)} {ex.endDate ? `— ${formatDateDisplay(ex.endDate)}` : ""}
                     </p>
                   )}
                   {ex.curator && <p style={{ fontSize: "0.95rem", color: "#444", marginTop: "0.25rem" }}>Curaduría: {ex.curator}</p>}
@@ -113,7 +124,9 @@ export default async function ExhibicionesPage() {
               <div key={ex.id} style={{ border: "1px solid #eee", padding: "1.5rem", borderRadius: "8px" }}>
                 <h3 style={{ fontSize: "1.5rem", fontWeight: "700" }}>{ex.title}</h3>
                 {(ex.startDate || ex.endDate) && (
-                  <p style={{ fontSize: "0.9rem", color: "#666", marginTop: "0.25rem" }}>{ex.startDate} — {ex.endDate}</p>
+                  <p style={{ fontSize: "0.9rem", color: "#666", marginTop: "0.25rem" }}>
+                    {formatDateDisplay(ex.startDate)} {ex.endDate ? `— ${formatDateDisplay(ex.endDate)}` : ""}
+                  </p>
                 )}
               </div>
             ))}
@@ -144,7 +157,7 @@ export default async function ExhibicionesPage() {
                   <h3 style={{ fontSize: "1.4rem", fontWeight: "700", margin: 0 }}>{ex.title}</h3>
                   {(ex.startDate || ex.endDate) && (
                     <p style={{ fontSize: "0.85rem", color: "#777", marginTop: "0.25rem" }}>
-                      {ex.startDate} {ex.endDate ? `— ${ex.endDate}` : ""}
+                      {formatDateDisplay(ex.startDate)} {ex.endDate ? `— ${formatDateDisplay(ex.endDate)}` : ""}
                     </p>
                   )}
                   <div style={{ marginTop: "1rem" }}>

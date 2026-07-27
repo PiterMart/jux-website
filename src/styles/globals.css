@@ -1,82 +1,50 @@
 @font-face {
-  font-family: "Avenir Next Cyr";
-  src: url("/fonts/AvenirNextCyr-UltraLightIt.ttf") format("truetype");
-  font-weight: 200;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Avenir Next Cyr";
-  src: url("/fonts/AvenirNextCyr-Medium.ttf") format("truetype");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Avenir Next Cyr";
-  src: url("/fonts/AvenirNextCyr-MediumItalic.ttf") format("truetype");
-  font-weight: 500;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Avenir Next Cyr";
-  src: url("/fonts/AvenirNextCyr-DemiItalic.ttf") format("truetype");
-  font-weight: 600;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Avenir Next Cyr";
-  src: url("/fonts/AvenirNextCyr-Heavy.ttf") format("truetype");
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Overused Grotesk";
-  src: url("/fonts/OverusedGrotesk/OverusedGrotesk-Italic.otf") format("opentype");
+  font-family: "Josefin Sans";
+  src: url("/fonts/JosefinSans-Regular.ttf") format("truetype");
   font-weight: 400;
-  font-style: italic;
+  font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Overused Grotesk";
-  src: url("/fonts/OverusedGrotesk/OverusedGrotesk-LightItalic.otf") format("opentype");
-  font-weight: 300;
-  font-style: italic;
+  font-family: "Josefin Sans";
+  src: url("/fonts/JosefinSans-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Josefin Sans";
+  src: url("/fonts/JosefinSans-VariableFont_wght.ttf") format("truetype-variations");
+  font-weight: 100 900;
+  font-style: normal;
   font-display: swap;
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #000000;
-  --border-radius: 6px;
-  --font-family-base: "Avenir Next Cyr", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-paragraph: "Overused Grotesk", Georgia, "Times New Roman", serif;
-  --font-grid-card: "Overused Grotesk", Georgia, "Times New Roman", serif;
-  --font-paragraph-light: "Overused Grotesk", Georgia, "Times New Roman", serif;
-  --paragraph-font-size: 1.25rem;
-  --paragraph-line-height: 1.25rem;
-  --subtext-font-size: 1.25rem;
+  --background: #D3D5CE;
+  --foreground: #111111;
+  --border-radius: 4px;
+  --font-family-base: "Josefin Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-paragraph: "Josefin Sans", sans-serif;
+  --font-grid-card: "Josefin Sans", sans-serif;
+  --font-paragraph-light: "Josefin Sans", sans-serif;
+  --paragraph-font-size: 1.15rem;
+  --paragraph-line-height: 1.6;
+  --subtext-font-size: 1.1rem;
   --subtext-line-height: 1.5rem;
-  --font-weight-ultralight: 200;
-  --font-weight-medium: 500;
+  --font-weight-ultralight: 300;
+  --font-weight-medium: 400;
   --font-weight-demibold: 600;
-  --font-weight-heavy: 800;
-  --header-font-size: 5rem;
+  --font-weight-heavy: 700;
+  --header-font-size: 4rem;
   --line-height-tight: 1.1;
   --line-height-default: 1.5;
   --line-height-relaxed: 1.7;
   --letter-spacing-tight: -0.015em;
-  --letter-spacing-default: 0.01em;
-  --page-padding: 0.35rem;
+  --letter-spacing-default: 0.02em;
+  --page-padding: 1.5rem;
 }
 
 html,
@@ -226,7 +194,7 @@ a {
   max-width: 100%;
   overflow-x: hidden;
   box-sizing: border-box;
-  padding: 7.5rem var(--page-padding) var(--page-padding) var(--page-padding);
+  padding: 7.5rem var(--page-padding) 0 var(--page-padding);
   margin: auto;
 }
 

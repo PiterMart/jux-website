@@ -19,6 +19,10 @@ export const ACTION_TYPES = {
 
 // Resource types
 export const RESOURCE_TYPES = {
+  EQUIPO: "equipo",
+  ARTIST: "artist",
+  ARTWORK: "artwork",
+  EXHIBITION: "exhibition",
   MEMBER: "member",
   EVENT: "event",
   NOTA: "nota",

@@ -1,12 +1,9 @@
-import Image from "next/image";
 import styles from "../../styles/page.module.css";
 import FooterStyles from "../../styles/Footer.module.css";
-import MailchimpForm from "../../components/MailchimpForm";
-import AnimatedPageHeader from "../../components/AnimatedPageHeader";
 
 export const metadata = {
-  title: "Contacto | Nos en Vera",
-  description: "Ponte en contacto con Nos en Vera. Encuéntranos en Vera 1350, CABA, o síguenos en nuestras redes sociales.",
+  title: "Contacto | Galería de Arte",
+  description: "Ponte en contacto con la Galería de Arte contemporáneo. Escríbenos o visítanos en nuestro espacio.",
 };
 
 export default function Contacto() {
@@ -20,15 +17,15 @@ export default function Contacto() {
     <div className={styles.page}>
       <main className={styles.main}>
         <div className={styles.page_container}>
-          <AnimatedPageHeader loaded={true}>CONTACTO</AnimatedPageHeader>
+          <h1 className={styles.sectionTitle} style={{ fontSize: "3rem", fontWeight: "300" }}>CONTACTO</h1>
           <p className={styles.pageSubtext}>
-            Ubicado en el corazón de Villa Crespo, Nos en Vera es un espacio de encuentro, creación y exhibición. 
-            Escríbenos para consultas sobre residencias, talleres o propuestas artísticas.
+            Ubicado en el corazón de Villa Crespo, nuestro espacio es un punto de encuentro, creación y exhibición de arte contemporáneo.
+            Escríbenos para consultas sobre la colección, visitas o propuestas de exhibición.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem', width: '100%', marginTop: '2rem' }}>
             <div className={FooterStyles.footerContact}>
               <div>
-                <h3 className={FooterStyles.contactTitle} style={{ marginBottom: '1rem' }}>MAIL</h3>
+                <h3 className={FooterStyles.contactTitle} style={{ marginBottom: '1rem' }}>EMAIL</h3>
                 <div className={FooterStyles.contactInfo}>
                   <p>
                     <a href="mailto:nos.envera@gmail.com">nos.envera@gmail.com</a>
@@ -53,7 +50,6 @@ export default function Contacto() {
                   </a>
                 </div>
               </div>
-              <MailchimpForm />
             </div>
 
             {contactInfo.googleMapsEmbed && (
@@ -73,7 +69,7 @@ export default function Contacto() {
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  title="Nos en Vera - Ubicación"
+                  title="Ubicación Galería"
                   style={{ border: 0, borderRadius: 'var(--border-radius)' }}
                 ></iframe>
               </div>

@@ -1,39 +1,24 @@
 import "../styles/globals.css";
 import Nav from "../components/Nav";
-import RecentEvents from "../components/RecentEvents";
 import Footer from "../components/Footer";
 import LoadingProvider from "../components/LoadingProvider";
-import PageTransitionProvider from "../components/PageTransitionProvider";
-import PageTransitionWrapper from "../components/PageTransitionWrapper";
-import ScrollToTop from "../components/ScrollToTop";
-import Popup from "../components/Popup";
+import { LanguageProvider } from "../context/LanguageContext";
 
 export const metadata = {
   title: {
-    template: "%s | Nos en Vera",
-    default: "Nos en Vera | Espacio de Performance y Creación",
+    template: "%s | Galería de Arte",
+    default: "Galería de Arte | El Museo, Exhibiciones, Educación y 360",
   },
-  description: "Espacio de arte y cultura dedicado a la promoción de artists emergentes, la investigación y la experimentación en el campo de la performance.",
-  keywords: ["performance", "arte", "cultura", "investigación artística", "artistas emergentes", "Buenos Aires"],
-  metadataBase: new URL("https://www.nosenvera.com"),
-  alternates: {
-    canonical: "/",
-  },
+  description: "Espacio de arte contemporáneo, exhibiciones, educación y recorridos 360°.",
+  keywords: ["galería de arte", "exhibiciones", "arte contemporáneo", "obras de arte", "artistas", "360"],
   icons: {
     icon: '/favicon.ico',
   },
   openGraph: {
-    title: "Nos en Vera",
-    description: "Espacio de convergencia y creación colectiva en el campo de la performance.",
-    url: "https://www.nosenvera.com",
-    siteName: "Nos en Vera",
+    title: "Galería de Arte",
+    description: "Espacio de arte contemporáneo, exhibiciones, educación y recorridos 360°.",
     locale: "es_ES",
     type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Nos en Vera",
-    description: "Espacio de convergencia y creación colectiva en el campo de la performance.",
   },
 };
 
@@ -46,47 +31,56 @@ export default function RootLayout({ children }) {
         <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
         <link rel="preconnect" href="https://firestore.googleapis.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://firestore.gstatic.com" />
-
-        {/* Google Fonts — loaded as <link> instead of CSS @import to avoid render-blocking */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap"
-          rel="stylesheet"
-        />
       </head>
       <body
         style={{
           minHeight: '100vh',
           margin: 0,
-          padding: 0
+          padding: 0,
+          position: 'relative'
         }}
       >
+        {/* Background Contour SVG - 90vh height, aligned right with 2rem margin, layered on top of footer */}
+        <div
+          style={{
+            position: 'fixed',
+            top: '50%',
+            right: '2rem',
+            transform: 'translateY(-50%)',
+            height: '90vh',
+            maxHeight: '90vh',
+            width: 'auto',
+            pointerEvents: 'none',
+            zIndex: 5,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            opacity: 0.9,
+          }}
+        >
+          <img
+            src="/jux-contorno.svg"
+            alt=""
+            style={{
+              height: '90vh',
+              maxHeight: '90vh',
+              width: 'auto',
+              objectFit: 'contain',
+              pointerEvents: 'none'
+            }}
+          />
+        </div>
+
         <LoadingProvider>
-          <PageTransitionProvider>
-            <ScrollToTop />
+          <LanguageProvider>
             <Nav />
-            <div className="appGrid">
+            <div className="appGrid" style={{ position: 'relative', zIndex: 1 }}>
               <main className="mainContent">
-                <PageTransitionWrapper>
-                  {children}
-                </PageTransitionWrapper>
-                <div>
-                  {/* <RecentEvents /> */}
-                  <Footer />
-                </div>
+                {children}
               </main>
+              <Footer />
             </div>
-            {/* <Popup /> */}
-          </PageTransitionProvider>
+          </LanguageProvider>
         </LoadingProvider>
       </body>
     </html>

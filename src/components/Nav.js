@@ -1,177 +1,84 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { TransitionLink } from './TransitionLink';
+import { useLanguage } from '../context/LanguageContext';
 import styles from '../styles/nav.module.css';
 import { NAV_PAGES } from '../constants/navigation';
 
-function easeOutBounce(x) {
-    const n1 = 7.5625;
-    const d1 = 2.75;
-    if (x < 1 / d1) {
-        return n1 * x * x;
-    } else if (x < 2 / d1) {
-        return n1 * (x -= 1.5 / d1) * x + 0.75;
-    } else if (x < 2.5 / d1) {
-        return n1 * (x -= 2.25 / d1) * x + 0.9375;
-    } else {
-        return n1 * (x -= 2.625 / d1) * x + 0.984375;
-    }
-}
-
 export default function Nav() {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const currentPath = usePathname();
-    const logoRef = useRef(null);
-    const animRef = useRef(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const currentPath = usePathname();
+  const { language } = useLanguage();
 
-    useEffect(() => {
-        return () => {
-            if (animRef.current) cancelAnimationFrame(animRef.current);
-        };
-    }, []);
+  const getPageName = (page) => {
+    if (language === 'EN') {
+      const enNames = {
+        "/el-museo": "THE MUSEUM",
+        "/exhibiciones": "EXHIBITIONS",
+        "/artistas": "ARTISTS",
+        "/obras": "ARTWORKS",
+        "/educacion": "EDUCATION",
+        "/360": "360°",
+        "/contacto": "CONTACT",
+        "/agenda": "AGENDA",
+      };
+      return enNames[page.path] || page.name;
+    }
+    return page.name;
+  };
 
-    // Scroll to footer when hash is present in URL
-    useEffect(() => {
-        const handleHashChange = () => {
-            if (window.location.hash === '#footer') {
-                setTimeout(() => {
-                    const footer = document.getElementById('footer');
-                    if (footer) {
-                        footer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                }, 300);
-            }
-        };
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [currentPath]);
 
-        handleHashChange();
-        window.addEventListener('hashchange', handleHashChange);
-        
-        return () => {
-            window.removeEventListener('hashchange', handleHashChange);
-        };
-    }, [currentPath]);
+  return (
+    <header className={styles.navbarHeader}>
+      <div className={styles.navContainer}>
+        {/* LOGO ON FAR LEFT */}
+        <Link href="/" className={styles.logoLink} aria-label="JUX Home">
+          <Image
+            src="/JUX-LOGO.svg"
+            alt="JUX Logo"
+            width={90}
+            height={32}
+            className={styles.navLogo}
+            priority
+          />
+        </Link>
 
-    const handleNavigation = (page, e) => {
-        setIsMenuOpen(false);
-    };
+        {/* HORIZONTAL NAV MENU */}
+        <nav className={`${styles.navMenu} ${isMenuOpen ? styles.navMenuOpen : ''}`}>
+          <ul>
+            {NAV_PAGES.map((page) => {
+              const isActive = currentPath === page.path;
+              return (
+                <li key={page.path}>
+                  <Link
+                    href={page.path}
+                    className={`${styles.navLink} ${isActive ? styles.navLinkActive : ''}`}
+                  >
+                    {getPageName(page)}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
 
-    const scrollToFooter = (e) => {
-        e.preventDefault();
-        setIsMenuOpen(false);
-        const footer = document.getElementById('footer');
-        if (footer) {
-            footer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    };
-
-    const runBounceAnimation = () => {
-        const el = logoRef.current;
-        if (!el || animRef.current) return;
-
-        const duration = 850;
-        const pressDuration = 60;
-        const startTime = performance.now();
-        el.style.transition = 'none';
-
-        const tick = (now) => {
-            const elapsed = now - startTime;
-            if (elapsed >= duration) {
-                el.style.transform = 'scale(1)';
-                el.style.transition = '';
-                animRef.current = null;
-                return;
-            }
-
-            let scale;
-            if (elapsed < pressDuration) {
-                const t = elapsed / pressDuration;
-                scale = 0.5 - 0.08 * t;
-            } else {
-                const t = Math.min(1, (elapsed - pressDuration) / (duration - pressDuration));
-                const eased = easeOutBounce(t);
-                scale = 0.92 + 0.2 * eased;
-            }
-            el.style.transform = `scale(${scale})`;
-            animRef.current = requestAnimationFrame(tick);
-        };
-        animRef.current = requestAnimationFrame(tick);
-    };
-
-    const toggleMenu = () => {
-        runBounceAnimation();
-        setIsMenuOpen((prev) => !prev);
-    };
-
-    const isCurrent = (path) => {
-        return currentPath === path;
-    };
-
-    return (
-        <>
-            <div className={`${styles.nav} ${isMenuOpen ? styles.nav_active : ''}`}>
-                <div className={`${styles.nav_list} ${isMenuOpen ? styles.nav_list_active : ''}`} id="navMenu">
-                    <ul>
-                        {NAV_PAGES.flatMap((page, index) => {
-                            if (page.children) {
-                                return page.children.map((child, idx) => (
-                                    <li key={`child-${index}-${idx}`}>
-                                        <TransitionLink
-                                            href={child.path}
-                                            className={isCurrent(child.path) ? styles.page_current : ''}
-                                            onClick={(e) => handleNavigation(child, e)}
-                                        >
-                                            {child.name}
-                                        </TransitionLink>
-                                    </li>
-                                ));
-                            } else if (page.path === '/contacto') {
-                                return (
-                                    <li key={`contact-${index}`}>
-                                        <a
-                                            href="#footer"
-                                            onClick={scrollToFooter}
-                                            style={{ cursor: 'pointer' }}
-                                        >
-                                            {page.name}
-                                        </a>
-                                    </li>
-                                );
-                            } else {
-                                return (
-                                    <li key={`page-${index}`}>
-                                        <TransitionLink
-                                            href={page.path}
-                                            className={isCurrent(page.path) ? styles.page_current : ''}
-                                            onClick={(e) => handleNavigation(page, e)}
-                                        >
-                                            {page.name}
-                                        </TransitionLink>
-                                    </li>
-                                );
-                            }
-                        })}
-                    </ul>
-                </div>
-                <button 
-                    ref={logoRef}
-                    className={styles.nav_logo_button} 
-                    onClick={toggleMenu}
-                    aria-label="Toggle menu"
-                >
-                    <Image
-                        src="/NV_Iso3D_4.png"
-                        alt="Nos en Vera Menu"
-                        width={120}
-                        height={120}
-                        className={styles.nav_logo_image}
-                        priority={true}
-                        quality={75}
-                    />
-                </button>
-            </div>
-        </>
-    );
+        {/* MOBILE BURGER TOGGLE */}
+        <button
+          type="button"
+          className={`${styles.mobileToggle} ${isMenuOpen ? styles.mobileToggleActive : ''}`}
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label="Toggle navigation menu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </header>
+  );
 }
-

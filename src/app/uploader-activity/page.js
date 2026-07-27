@@ -134,6 +134,10 @@ export default function ActivityLogsPage() {
 
   const getResourceLabel = (resourceType) => {
     const labels = {
+      equipo: "Equipo",
+      artist: "Artista",
+      artwork: "Obra",
+      exhibition: "Exhibición",
       member: "Miembro",
       event: "Evento",
       nota: "Nota",
@@ -298,11 +302,11 @@ export default function ActivityLogsPage() {
                           )}
                         </td>
                         <td style={{ padding: "1rem", fontSize: "0.85rem", color: "#666" }}>
+                          {log.metadata?.name && `Nombre: ${log.metadata.name}`}
+                          {log.metadata?.title && `Título: ${log.metadata.title}`}
                           {log.metadata?.memberName && `Miembro: ${log.metadata.memberName}`}
                           {log.metadata?.eventName && `Evento: ${log.metadata.eventName}`}
-                          {log.metadata?.notaTitle && `Nota: ${log.metadata.notaTitle}`}
-                          {log.metadata?.fieldsUpdated && `Campos: ${log.metadata.fieldsUpdated.length}`}
-                          {!log.metadata?.memberName && !log.metadata?.eventName && !log.metadata?.articleTitle && !log.metadata?.fieldsUpdated && "-"}
+                          {!log.metadata?.name && !log.metadata?.title && !log.metadata?.memberName && !log.metadata?.eventName && "-"}
                         </td>
                       </tr>
                     ))

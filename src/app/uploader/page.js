@@ -4,18 +4,17 @@ import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebas
 import { auth } from "../firebase/firebaseAuth";
 import { logLogin, logLogout } from "../firebase/activityLogger";
 import styles from "../../styles/uploader.module.css";
-import ComunidadUploader from "../firebase/ComunidadUploader";
-import EventUploader from "../firebase/EventUploader";
-import ArticlesUploader from "../firebase/ArticlesUploader";
-import CommunityList from "../firebase/CommunityList";
-import EventList from "../firebase/EventList";
-import ArticlesList from "../firebase/ArticlesList";
-import NotasUploader from "../firebase/NotasUploader";
-import NotasList from "../firebase/NotasList";
-import HighlightsOrder from "../firebase/HighlightsOrder";
+import EquipoUploader from "../firebase/EquipoUploader";
+import EquipoList from "../firebase/EquipoList";
+import ArtistUploader from "../firebase/ArtistUploader";
+import ArtistList from "../firebase/ArtistList";
+import ArtworkUploader from "../firebase/ArtworkUploader";
+import ArtworkList from "../firebase/ArtworkList";
+import ExhibitionUploader from "../firebase/ExhibitionUploader";
+import ExhibitionList from "../firebase/ExhibitionList";
 
 export default function Home() {
-  const [activeSection, setActiveSection] = useState("community");
+  const [activeSection, setActiveSection] = useState("exhibitions");
   const [user, setUser] = useState(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,34 +22,27 @@ export default function Home() {
   const previousUserRef = useRef(null);
 
   useEffect(() => {
-    console.log("Checking authentication...");
-  
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      console.log("User Status:", currentUser);
       const previousUser = previousUserRef.current;
       previousUserRef.current = currentUser;
       setUser(currentUser);
-      
-      // Log login when user changes from null to authenticated
+
       if (currentUser && !previousUser) {
         await logLogin();
       }
-      // Log logout when user changes from authenticated to null
       if (!currentUser && previousUser) {
         await logLogout();
       }
     });
-  
+
     return () => unsubscribe();
   }, []);
-  
 
   const handleLogin = async () => {
-    setError(""); // Clear previous errorsL
+    setError("");
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // Login logging is handled in onAuthStateChanged
-    } catch (error) {
+    } catch (err) {
       setError("Correo electrónico o contraseña inválidos.");
     }
   };
@@ -68,11 +60,11 @@ export default function Home() {
 
   if (!user) {
     return (
-      <div className={styles.loginContainer}> {/* Add CSS Module class */}
-        <h2 className={styles.loginTitle}>Hola. <br></br> Inicia sesión para acceder al panel de administración.</h2>
+      <div className={styles.loginContainer}>
+        <h2 className={styles.loginTitle}>Panel de Administración <br /> Galería de Arte</h2>
         {error && <p className={styles.error}>{error}</p>}
         <div className={styles.formGroup}>
-        <p className={styles.helpText}>Correo electrónico</p>
+          <p className={styles.helpText}>Correo electrónico</p>
           <input
             type="email"
             placeholder="Correo electrónico"
@@ -90,7 +82,6 @@ export default function Home() {
             onKeyDown={handleKeyPress}
             className={styles.input}
           />
-          <p className={styles.helpText}>¿Olvidaste tu contraseña? Contacta al administrador.</p>
           <button onClick={handleLogin} className={styles.loginButton}>
             Iniciar sesión
           </button>
@@ -101,90 +92,81 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
-      <main className={styles.main} style={{ maxWidth: "1500px", paddingTop: "10rem" }}>
-        {/* Logout Button */}
-        {/* <button onClick={handleLogout} style={{ position: "absolute", top: 20, right: 20 }}>
-          Logout
-        </button> */}
-
-        {/* Navigation Buttons */}
+      <main className={styles.main} style={{ maxWidth: "1500px", paddingTop: "6rem" }}>
         <button onClick={handleLogout} className={styles.logoutButton}>
           Cerrar sesión
         </button>
-        <div style={{ margin: "auto" }}>
-          <p className={styles.title}> ¿En qué estás trabajando?</p>
+
+        <div style={{ margin: "auto", textAlign: "center", marginBottom: "1rem" }}>
+          <p className={styles.title}>Panel de Administración de la Galería</p>
         </div>
-        <div className={styles.navContainer}>
+
+        <div className={styles.navContainer} style={{ justifyContent: "center", gap: "1.5rem" }}>
           <div className={styles.navGroup}>
-            <button onClick={() => setActiveSection("community")} className={styles.navButton}>COMUNIDAD</button>
-            <button onClick={() => setActiveSection("artistsList")} className={styles.navButton}>Lista de Comunidad</button>
+            <button onClick={() => setActiveSection("exhibitions")} className={styles.navButton}>EXHIBICIONES</button>
+            <button onClick={() => setActiveSection("exhibitionsList")} className={styles.navButton}>Lista Exhibiciones</button>
           </div>
           <div className={styles.navGroup}>
-            <button onClick={() => setActiveSection("events")} className={styles.navButton}>EVENTOS</button>
-            <button onClick={() => setActiveSection("eventsList")} className={styles.navButton}>Lista de Eventos</button>
-            <button onClick={() => setActiveSection("highlightsOrder")} className={styles.navButton}>Destacados</button>
+            <button onClick={() => setActiveSection("artworks")} className={styles.navButton}>OBRAS</button>
+            <button onClick={() => setActiveSection("artworksList")} className={styles.navButton}>Lista Obras</button>
           </div>
           <div className={styles.navGroup}>
-            <button onClick={() => setActiveSection("features")} className={styles.navButton}>NOTAS</button>
-            <button onClick={() => setActiveSection("articlesList")} className={styles.navButton}>Lista de Notas</button>
+            <button onClick={() => setActiveSection("artists")} className={styles.navButton}>ARTISTAS</button>
+            <button onClick={() => setActiveSection("artistsList")} className={styles.navButton}>Lista Artistas</button>
+          </div>
+          <div className={styles.navGroup}>
+            <button onClick={() => setActiveSection("equipo")} className={styles.navButton}>EQUIPO</button>
+            <button onClick={() => setActiveSection("equipoList")} className={styles.navButton}>Lista Equipo</button>
           </div>
         </div>
 
-        {/* Events Section */}
-        {activeSection === "events" && (
-          <div id="events" style={{ width: "100%", padding: "1rem", display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "1000px", margin: "auto" }}>
-            <p className={styles.title}>EVENTOS</p>
-            <EventUploader />
+        {/* EXHIBICIONES */}
+        {activeSection === "exhibitions" && (
+          <div style={{ width: "100%", padding: "1rem", maxWidth: "1000px", margin: "auto" }}>
+            <ExhibitionUploader />
+          </div>
+        )}
+        {activeSection === "exhibitionsList" && (
+          <div style={{ width: "100%", padding: "1rem", maxWidth: "1000px", margin: "auto" }}>
+            <ExhibitionList />
           </div>
         )}
 
-        {/* Articles Section -> Notas Section */}
-        {activeSection === "features" && (
-          <div id="features" style={{ width: "100%", padding: "1rem", display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "1000px", margin: "auto" }}>
-            <p className={styles.title}>NOTAS</p>
-            <NotasUploader />
+        {/* OBRAS */}
+        {activeSection === "artworks" && (
+          <div style={{ width: "100%", padding: "1rem", maxWidth: "1000px", margin: "auto" }}>
+            <ArtworkUploader />
+          </div>
+        )}
+        {activeSection === "artworksList" && (
+          <div style={{ width: "100%", padding: "1rem", maxWidth: "1000px", margin: "auto" }}>
+            <ArtworkList />
           </div>
         )}
 
-        {/* Community Members List Section */}
+        {/* ARTISTAS */}
+        {activeSection === "artists" && (
+          <div style={{ width: "100%", padding: "1rem", maxWidth: "1000px", margin: "auto" }}>
+            <ArtistUploader />
+          </div>
+        )}
         {activeSection === "artistsList" && (
-          <div id="community-list" style={{ width: "100%", padding: "1rem", display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "1000px", margin: "auto" }}>
-            <p className={styles.title}>LISTA DE LA COMUNIDAD</p>
-            <CommunityList />
+          <div style={{ width: "100%", padding: "1rem", maxWidth: "1000px", margin: "auto" }}>
+            <ArtistList />
           </div>
         )}
 
-        {/* Events List Section */}
-        {activeSection === "eventsList" && (
-          <div id="events-list" style={{ width: "100%", padding: "1rem", display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "1000px", margin: "auto" }}>
-            <p className={styles.title}>LISTA DE EVENTOS</p>
-            <EventList />
+        {/* EQUIPO */}
+        {activeSection === "equipo" && (
+          <div style={{ width: "100%", padding: "1rem", maxWidth: "1000px", margin: "auto" }}>
+            <EquipoUploader />
           </div>
         )}
-
-        {/* Highlights Order Section */}
-        {activeSection === "highlightsOrder" && (
-          <div id="highlights-order" style={{ width: "100%", padding: "1rem", display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "1000px", margin: "auto" }}>
-            <HighlightsOrder />
+        {activeSection === "equipoList" && (
+          <div style={{ width: "100%", padding: "1rem", maxWidth: "1000px", margin: "auto" }}>
+            <EquipoList />
           </div>
         )}
-
-        {/* Community Section */}
-        {activeSection === "community" && (
-          <div id="community" style={{ width: "100%", padding: "1rem", display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "1000px", margin: "auto" }}>
-            <p className={styles.title}>COMUNIDAD</p>
-            <ComunidadUploader />
-          </div>
-        )}
-
-        {/* Articles List Section -> Notas List Section */}
-        {activeSection === "articlesList" && (
-          <div id="articles-list" style={{ width: "100%", padding: "1rem", display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "1000px", margin: "auto" }}>
-            <p className={styles.title}>LISTA DE NOTAS</p>
-            <NotasList />
-          </div>
-        )}
-
       </main>
     </div>
   );

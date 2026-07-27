@@ -7,6 +7,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import imageCompression from "browser-image-compression";
 import SearchableDropdown from "../../components/SearchableDropdown";
 import { logCreate, logUpdate, logDelete, RESOURCE_TYPES } from "./activityLogger";
+import { sanitizeFilename, safeCompressImage, formatUploadError } from "./uploadUtils";
 import styles from "../../styles/uploader.module.css";
 
 export default function ArtistUploader() {
@@ -134,21 +135,23 @@ export default function ArtistUploader() {
 
       // 1. Image upload
       if (imageFile) {
-        const compressed = await imageCompression(imageFile, {
+        const compressed = await safeCompressImage(imageFile, {
           maxSizeMB: 1,
           maxWidthOrHeight: 1400,
           useWebWorker: true,
         });
-        const imgRef = ref(storage, `artists/${id}/profile_${Date.now()}`);
-        await uploadBytes(imgRef, compressed);
+        const safeName = sanitizeFilename(imageFile.name);
+        const imgRef = ref(storage, `artists/${id}/profile_${Date.now()}_${safeName}`);
+        await uploadBytes(imgRef, compressed, { contentType: imageFile.type || "image/jpeg" });
         profilePictureUrl = await getDownloadURL(imgRef);
       }
 
       // 2. CV PDF upload
       let finalCvUrl = cvUrl;
       if (cvFile) {
-        const cvStorageRef = ref(storage, `artists/${id}/cv_${Date.now()}.pdf`);
-        await uploadBytes(cvStorageRef, cvFile);
+        const safeCvName = sanitizeFilename(cvFile.name);
+        const cvStorageRef = ref(storage, `artists/${id}/cv_${Date.now()}_${safeCvName}`);
+        await uploadBytes(cvStorageRef, cvFile, { contentType: "application/pdf" });
         finalCvUrl = await getDownloadURL(cvStorageRef);
       }
 
@@ -188,8 +191,8 @@ export default function ArtistUploader() {
       resetForm();
       fetchArtists();
     } catch (e) {
-      console.error(e);
-      setError(e.message || "Error al guardar el artista.");
+      console.error("Error en submit de artista:", e);
+      setError(formatUploadError(e));
     } finally {
       setLoading(false);
     }

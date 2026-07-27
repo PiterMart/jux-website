@@ -8,6 +8,7 @@ import imageCompression from "browser-image-compression";
 import SearchableDropdown from "../../components/SearchableDropdown";
 import { syncExhibitionRelations } from "./relationalSync";
 import { logCreate, logUpdate, logDelete, RESOURCE_TYPES } from "./activityLogger";
+import { sanitizeFilename, safeCompressImage, formatUploadError } from "./uploadUtils";
 import styles from "../../styles/uploader.module.css";
 
 export default function ExhibitionUploader() {
@@ -203,34 +204,38 @@ export default function ExhibitionUploader() {
       // 1. Cover Image Upload
       let coverImageUrl = coverPreview;
       if (coverFile) {
-        const compressed = await imageCompression(coverFile, {
+        const compressed = await safeCompressImage(coverFile, {
           maxSizeMB: 1,
           maxWidthOrHeight: 1800,
           useWebWorker: true,
         });
-        const imgRef = ref(storage, `exhibitions/${id}/cover_${Date.now()}`);
-        await uploadBytes(imgRef, compressed);
+        const safeName = sanitizeFilename(coverFile.name);
+        const imgRef = ref(storage, `exhibitions/${id}/cover_${Date.now()}_${safeName}`);
+        await uploadBytes(imgRef, compressed, { contentType: coverFile.type || "image/jpeg" });
         coverImageUrl = await getDownloadURL(imgRef);
       }
 
       // 2. PDF Catalog Upload
       let finalPdfUrl = pdfUrl;
       if (pdfFile) {
-        const pdfStorageRef = ref(storage, `exhibitions/${id}/catalog_${Date.now()}.pdf`);
-        await uploadBytes(pdfStorageRef, pdfFile);
+        const safePdfName = sanitizeFilename(pdfFile.name);
+        const pdfStorageRef = ref(storage, `exhibitions/${id}/catalog_${Date.now()}_${safePdfName}`);
+        await uploadBytes(pdfStorageRef, pdfFile, { contentType: "application/pdf" });
         finalPdfUrl = await getDownloadURL(pdfStorageRef);
       }
 
       // 3. New Gallery Uploads
       const uploadedGallery = [...existingGallery];
-      for (const file of galleryImages) {
-        const compressed = await imageCompression(file, {
+      for (let i = 0; i < galleryImages.length; i++) {
+        const file = galleryImages[i];
+        const compressed = await safeCompressImage(file, {
           maxSizeMB: 1,
           maxWidthOrHeight: 1800,
           useWebWorker: true,
         });
-        const gRef = ref(storage, `exhibitions/${id}/gallery_${Date.now()}_${file.name}`);
-        await uploadBytes(gRef, compressed);
+        const safeName = sanitizeFilename(file.name || `gallery_${i}.jpg`);
+        const gRef = ref(storage, `exhibitions/${id}/gallery_${Date.now()}_${i}_${safeName}`);
+        await uploadBytes(gRef, compressed, { contentType: file.type || "image/jpeg" });
         const url = await getDownloadURL(gRef);
         uploadedGallery.push({ url, description: "" });
       }
@@ -284,8 +289,8 @@ export default function ExhibitionUploader() {
       resetForm();
       fetchCatalogs();
     } catch (e) {
-      console.error(e);
-      setError(e.message || "Error al guardar la exhibición.");
+      console.error("Error en submit de exhibición:", e);
+      setError(formatUploadError(e));
     } finally {
       setLoading(false);
     }

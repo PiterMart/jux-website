@@ -7,6 +7,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import imageCompression from "browser-image-compression";
 import SearchableDropdown from "../../components/SearchableDropdown";
 import { logCreate, logUpdate, logDelete, RESOURCE_TYPES } from "./activityLogger";
+import { sanitizeFilename, safeCompressImage, formatUploadError } from "./uploadUtils";
 import styles from "../../styles/uploader.module.css";
 
 export default function EquipoUploader() {
@@ -97,13 +98,14 @@ export default function EquipoUploader() {
       let profilePictureUrl = imagePreview;
 
       if (imageFile) {
-        const compressed = await imageCompression(imageFile, {
+        const compressed = await safeCompressImage(imageFile, {
           maxSizeMB: 0.8,
           maxWidthOrHeight: 1200,
           useWebWorker: true,
         });
-        const imgRef = ref(storage, `equipo/${id}/profile_${Date.now()}`);
-        await uploadBytes(imgRef, compressed);
+        const safeName = sanitizeFilename(imageFile.name);
+        const imgRef = ref(storage, `equipo/${id}/profile_${Date.now()}_${safeName}`);
+        await uploadBytes(imgRef, compressed, { contentType: imageFile.type || "image/jpeg" });
         profilePictureUrl = await getDownloadURL(imgRef);
       }
 
@@ -135,8 +137,8 @@ export default function EquipoUploader() {
       resetForm();
       fetchMembers();
     } catch (e) {
-      console.error(e);
-      setError(e.message || "Error al guardar el miembro de equipo.");
+      console.error("Error en submit de equipo:", e);
+      setError(formatUploadError(e));
     } finally {
       setLoading(false);
     }

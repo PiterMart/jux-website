@@ -8,6 +8,7 @@ import imageCompression from "browser-image-compression";
 import SearchableDropdown from "../../components/SearchableDropdown";
 import { syncArtworkRelations } from "./relationalSync";
 import { logCreate, logUpdate, logDelete, RESOURCE_TYPES } from "./activityLogger";
+import { sanitizeFilename, safeCompressImage, formatUploadError } from "./uploadUtils";
 import styles from "../../styles/uploader.module.css";
 
 const AVAILABILITY_OPTIONS = [
@@ -190,13 +191,14 @@ export default function ArtworkUploader() {
       // 1. Upload Cover Image
       let coverImageUrl = coverPreview;
       if (coverFile) {
-        const compressed = await imageCompression(coverFile, {
+        const compressed = await safeCompressImage(coverFile, {
           maxSizeMB: 1,
           maxWidthOrHeight: 1800,
           useWebWorker: true,
         });
-        const imgRef = ref(storage, `artworks/${id}/cover_${Date.now()}`);
-        await uploadBytes(imgRef, compressed);
+        const safeName = sanitizeFilename(coverFile.name);
+        const imgRef = ref(storage, `artworks/${id}/cover_${Date.now()}_${safeName}`);
+        await uploadBytes(imgRef, compressed, { contentType: coverFile.type || "image/jpeg" });
         coverImageUrl = await getDownloadURL(imgRef);
       }
 
@@ -204,13 +206,14 @@ export default function ArtworkUploader() {
       const finalDetailUrls = [...existingDetailUrls];
       for (let i = 0; i < detailFiles.length; i++) {
         const file = detailFiles[i];
-        const compressed = await imageCompression(file, {
+        const compressed = await safeCompressImage(file, {
           maxSizeMB: 1,
           maxWidthOrHeight: 1800,
           useWebWorker: true,
         });
-        const dRef = ref(storage, `artworks/${id}/detail_${Date.now()}_${i}`);
-        await uploadBytes(dRef, compressed);
+        const safeName = sanitizeFilename(file.name || `detail_${i}.jpg`);
+        const dRef = ref(storage, `artworks/${id}/detail_${Date.now()}_${i}_${safeName}`);
+        await uploadBytes(dRef, compressed, { contentType: file.type || "image/jpeg" });
         const url = await getDownloadURL(dRef);
         finalDetailUrls.push(url);
       }
@@ -253,8 +256,8 @@ export default function ArtworkUploader() {
       resetForm();
       fetchCatalogs();
     } catch (e) {
-      console.error(e);
-      setError(e.message || "Error al guardar la obra.");
+      console.error("Error en submit de obra:", e);
+      setError(formatUploadError(e));
     } finally {
       setLoading(false);
     }

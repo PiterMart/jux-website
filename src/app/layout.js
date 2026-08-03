@@ -12,7 +12,12 @@ export const metadata = {
   description: "Espacio de arte contemporáneo, exhibiciones, educación y recorridos 360°.",
   keywords: ["galería de arte", "exhibiciones", "arte contemporáneo", "obras de arte", "artistas", "360"],
   icons: {
-    icon: '/favicon.ico',
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/JUX-LOGO.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
   },
   openGraph: {
     title: "Galería de Arte",
@@ -26,6 +31,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="es">
       <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/JUX-LOGO.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/favicon.ico" />
         {/* Preconnect to Firebase Storage for faster LCP image loading */}
         <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />

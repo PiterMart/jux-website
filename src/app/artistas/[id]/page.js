@@ -3,7 +3,8 @@ import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { firestore } from "../../firebase/firebaseConfig";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
-import styles from "../../../styles/page.module.css";
+import pageStyles from "../../../styles/page.module.css";
+import styles from "../../../styles/artistas.module.css";
 
 export default function ArtistDetailPage({ params }) {
   const { id } = use(params);
@@ -42,8 +43,8 @@ export default function ArtistDetailPage({ params }) {
 
   if (loading) {
     return (
-      <div className={styles.page}>
-        <main className={styles.main} style={{ paddingTop: "12rem", textAlign: "center" }}>
+      <div className={pageStyles.page}>
+        <main className={styles.detailContainer} style={{ textAlign: "center" }}>
           <p style={{ color: "#888" }}>Cargando perfil de artista...</p>
         </main>
       </div>
@@ -52,8 +53,8 @@ export default function ArtistDetailPage({ params }) {
 
   if (!artist) {
     return (
-      <div className={styles.page}>
-        <main className={styles.main} style={{ paddingTop: "12rem", textAlign: "center" }}>
+      <div className={pageStyles.page}>
+        <main className={styles.detailContainer} style={{ textAlign: "center" }}>
           <h2>Artista no encontrado</h2>
           <Link href="/artistas" style={{ color: "#000", textDecoration: "underline", marginTop: "1rem", display: "inline-block" }}>
             Volver a la nómina de artistas
@@ -67,32 +68,15 @@ export default function ArtistDetailPage({ params }) {
   const statements = Array.isArray(artist.statement) ? artist.statement : artist.statement ? [artist.statement] : [];
 
   return (
-    <div className={styles.page}>
-      <main className={styles.main} style={{ paddingTop: "12rem", maxWidth: "1200px" }}>
+    <div className={pageStyles.page}>
+      <main className={styles.detailContainer}>
         {/* Header Profile Section */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 2fr",
-            gap: "3rem",
-            marginBottom: "5rem",
-            alignItems: "start",
-          }}
-        >
+        <div className={styles.profileGrid}>
           {/* Left Column: Image & Details */}
           <div>
-            <div
-              style={{
-                width: "100%",
-                aspectRatio: "3/4",
-                backgroundColor: "#f5f5f5",
-                borderRadius: "4px",
-                overflow: "hidden",
-                marginBottom: "1.5rem",
-              }}
-            >
+            <div className={styles.profileImageWrapper}>
               {artist.profilePicture ? (
-                <img src={artist.profilePicture} alt={artist.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <img src={artist.profilePicture} alt={artist.name} className={styles.profileImage} />
               ) : (
                 <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "4rem", color: "#ccc" }}>
                   👤

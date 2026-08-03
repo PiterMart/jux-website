@@ -40,34 +40,12 @@ export default function RootLayout({ children }) {
           position: 'relative'
         }}
       >
-        {/* Background Contour SVG - 90vh height, aligned right with 2rem margin, layered on top of footer */}
-        <div
-          style={{
-            position: 'fixed',
-            top: '50%',
-            right: '2rem',
-            transform: 'translateY(-50%)',
-            height: '90vh',
-            maxHeight: '90vh',
-            width: 'auto',
-            pointerEvents: 'none',
-            zIndex: 5,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            opacity: 0.9,
-          }}
-        >
+        {/* Background Contour SVG - 90vh on desktop, 30vh (1/3rd size) stuck top-right on mobile */}
+        <div className="bgContourContainer">
           <img
             src="/jux-contorno.svg"
             alt=""
-            style={{
-              height: '90vh',
-              maxHeight: '90vh',
-              width: 'auto',
-              objectFit: 'contain',
-              pointerEvents: 'none'
-            }}
+            className="bgContourImage"
           />
         </div>
 

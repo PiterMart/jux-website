@@ -96,6 +96,48 @@ p {
   }
 }
 
+/* Background Contour Logo SVG - 90vh on desktop, 30vh (1/3rd size) stuck top-right on mobile */
+.bgContourContainer {
+  position: fixed;
+  top: 50%;
+  right: 2rem;
+  transform: translateY(-50%);
+  height: 90vh;
+  max-height: 90vh;
+  width: auto;
+  pointer-events: none;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  opacity: 0.9;
+  transition: all 0.3s ease-in-out;
+}
+
+.bgContourImage {
+  height: 90vh;
+  max-height: 90vh;
+  width: auto;
+  object-fit: contain;
+  pointer-events: none;
+  transition: all 0.3s ease-in-out;
+}
+
+@media (max-width: 768px) {
+  .bgContourContainer {
+    top: 5rem;
+    right: 1rem;
+    transform: none;
+    height: 30vh;
+    max-height: 30vh;
+  }
+
+  .bgContourImage {
+    height: 30vh;
+    max-height: 30vh;
+  }
+}
+
 /* Firefox (uncomment to work in Firefox, although other properties will not work!)  */
 /** {
   scrollbar-width: thin;

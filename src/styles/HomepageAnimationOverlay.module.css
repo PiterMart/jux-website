@@ -1,0 +1,83 @@
+.overlayContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  pointer-events: none;
+  overflow: hidden;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.overlayActive {
+  pointer-events: auto;
+}
+
+.quadrant {
+  position: absolute;
+  width: 50vw;
+  height: 50vh;
+  overflow: hidden;
+  will-change: transform, opacity;
+  /* Slower, smoother liquid movement curve */
+  transition: transform 0.95s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.95s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.quadrantImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Quadrant Positioning */
+.topLeft {
+  top: 0;
+  left: 0;
+}
+
+.topRight {
+  top: 0;
+  left: 50vw;
+}
+
+.bottomLeft {
+  top: 50vh;
+  left: 0;
+}
+
+.bottomRight {
+  top: 50vh;
+  left: 50vw;
+}
+
+/* Retracted positions when dismissed */
+.retractedTL {
+  transform: translate(-115%, -115%) !important;
+  opacity: 0 !important;
+}
+
+.retractedTR {
+  transform: translate(115%, -115%) !important;
+  opacity: 0 !important;
+}
+
+.retractedBL {
+  transform: translate(-115%, 115%) !important;
+  opacity: 0 !important;
+}
+
+.retractedBR {
+  transform: translate(115%, 115%) !important;
+  opacity: 0 !important;
+}
+
+/* Fully hidden overlay container */
+.hiddenOverlay {
+  display: none;
+}

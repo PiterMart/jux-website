@@ -1,5 +1,8 @@
 import React from "react";
 import styles from "../styles/page.module.css";
+import HomepageAnimationOverlay from "../components/HomepageAnimationOverlay";
+import Statement from "../components/Statement";
+import LatestExhibition from "../components/LatestExhibition";
 
 export const metadata = {
   title: "Inicio",
@@ -9,7 +12,9 @@ export const metadata = {
 export default function Home() {
   return (
     <div className={styles.page} style={{ minHeight: "50vh" }}>
-      {/* Empty homepage - content to be defined */}
+      <HomepageAnimationOverlay />
+      <Statement />
+      <LatestExhibition />
     </div>
   );
 }

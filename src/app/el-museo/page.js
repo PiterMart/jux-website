@@ -1,11 +1,12 @@
 import React from "react";
 import { getDocs, collection } from "firebase/firestore";
 import { firestore } from "../firebase/firebaseConfig";
+import QueEsJux from "../../components/QueEsJux";
 import pageStyles from "../../styles/page.module.css";
 
 export const metadata = {
-  title: "El Museo",
-  description: "Misión, Statement y Equipo de la Galería de Arte.",
+  title: "El Museo | JUX",
+  description: "Un museo judío contemporáneo argentino, pero expandido.",
 };
 
 export const revalidate = 60; // revalidate every 60 seconds
@@ -28,41 +29,13 @@ export default async function ElMuseoPage() {
   const equipo = await getEquipoMembers();
 
   return (
-    <div className={pageStyles.page} style={{ padding: "3rem 1.5rem", maxWidth: "1200px", margin: "0 auto" }}>
-      {/* Header */}
-      <header style={{ marginBottom: "4rem", borderBottom: "1px solid #eee", paddingBottom: "2rem" }}>
-        <h1 style={{ fontSize: "3.5rem", fontWeight: "700", letterSpacing: "-0.02em", marginBottom: "1rem" }}>
-          EL MUSEO
-        </h1>
-        <p style={{ fontSize: "1.25rem", color: "#666", maxWidth: "700px" }}>
-          Un espacio dedicado al desarrollo, preservación y exhibición del arte contemporáneo.
-        </p>
-      </header>
+    <div className={pageStyles.page} style={{ padding: "1rem 1.5rem 4rem 1.5rem", maxWidth: "1300px", margin: "0 auto" }}>
+      {/* "¿QUÉ ES JUX.?" Statement & Mission Grid */}
+      <QueEsJux />
 
-      {/* Misión & Statement Grid */}
-      <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "3rem", marginBottom: "5rem" }}>
-        <div style={{ background: "#fafafa", padding: "2.5rem", borderRadius: "8px" }}>
-          <h2 style={{ fontSize: "1.75rem", fontWeight: "700", marginBottom: "1.5rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            Misión
-          </h2>
-          <p style={{ fontSize: "1.1rem", lineHeight: "1.7", color: "#333" }}>
-            Nuestra misión es cultivar un diálogo vivo entre los artistas contemporáneos y la comunidad. Buscamos promover prácticas innovadoras, la investigación estética y la democratización del acceso a las artes visuales en un espacio inclusivo y dinámico.
-          </p>
-        </div>
-
-        <div style={{ background: "#fafafa", padding: "2.5rem", borderRadius: "8px" }}>
-          <h2 style={{ fontSize: "1.75rem", fontWeight: "700", marginBottom: "1.5rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            Statement
-          </h2>
-          <p style={{ fontSize: "1.1rem", lineHeight: "1.7", color: "#333" }}>
-            Entendemos la galería como un organismo en constante transformación. Cada proyecto exhibido busca desafiar fronteras disciplinarias, conectando distintas visiones del mundo a través de la experimentación y el intercambio crítico.
-          </p>
-        </div>
-      </section>
-
-      {/* Equipo Roster */}
-      <section>
-        <h2 style={{ fontSize: "2.25rem", fontWeight: "700", marginBottom: "2.5rem", borderBottom: "1px solid #111", paddingBottom: "0.75rem" }}>
+      {/* Equipo Roster Section */}
+      <section style={{ marginTop: "4rem", borderTop: "1px solid #ddd", paddingTop: "4rem" }}>
+        <h2 style={{ fontSize: "2.25rem", fontWeight: "700", marginBottom: "2.5rem", borderBottom: "1px solid #111", paddingBottom: "0.75rem", color: "#111" }}>
           EQUIPO
         </h2>
 
@@ -76,7 +49,7 @@ export default async function ElMuseoPage() {
                   <img
                     src={member.profilePicture}
                     alt={member.name}
-                    style={{ width: "100%", height: "300px", objectFit: "cover", borderRadius: "6px" }}
+                    style={{ width: "100%", height: "auto", objectFit: "contain", borderRadius: "6px" }}
                   />
                 ) : (
                   <div

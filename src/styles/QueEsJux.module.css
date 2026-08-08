@@ -1,13 +1,13 @@
 .section {
   width: 100%;
-  padding: 2rem 0 5rem 0;
+  padding: 2rem 0 4rem 0;
   box-sizing: border-box;
 }
 
 .mainTitle {
   font-size: clamp(2.5rem, 5vw, 4rem);
   font-weight: 800;
-  color: #0b00b5;
+  color: var(--secondary-main, #1A2BFF);
   letter-spacing: 0.04em;
   margin-bottom: 3.5rem;
   text-transform: uppercase;
@@ -16,8 +16,8 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 3rem 2.5rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 3.5rem 4rem;
   align-items: start;
 }
 
@@ -28,9 +28,9 @@
 }
 
 .itemTitle {
-  font-size: 1.35rem;
+  font-size: clamp(1.4rem, 2vw, 1.8rem);
   font-weight: 800;
-  color: #0b00b5;
+  color: var(--secondary-main, #1A2BFF);
   letter-spacing: 0.05em;
   text-transform: uppercase;
   margin: 0;
@@ -38,10 +38,10 @@
 }
 
 .itemText {
-  font-size: 1.05rem;
-  line-height: 1.5;
-  color: #2c2c4d;
-  font-weight: 500;
+  font-size: clamp(1.05rem, 1.3vw, 1.25rem);
+  line-height: 1.6;
+  color: var(--foreground, #111111);
+  font-weight: 400;
   margin: 0;
   font-style: normal;
   text-align: left;
@@ -49,33 +49,26 @@
   font-family: var(--font-family-base), "Josefin Sans", sans-serif;
 }
 
-@media (max-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2.5rem 2rem;
-  }
-}
-
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .section {
-    padding: 1.5rem 0 3.5rem 0;
+    padding: 1.5rem 0 3rem 0;
   }
 
   .mainTitle {
     font-size: 2.25rem;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
   }
 
   .grid {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 2.5rem;
   }
 
   .itemTitle {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
   }
 
   .itemText {
-    font-size: 1rem;
+    font-size: 1.05rem;
   }
 }

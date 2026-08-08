@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { motion } from "framer-motion";
 import styles from "../styles/QueEsJux.module.css";
 
 const JUX_PILLARS = [
@@ -38,18 +39,55 @@ const JUX_PILLARS = [
   },
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.7,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+};
+
 export default function QueEsJux() {
   return (
     <section className={styles.section} aria-label="¿Qué es Jux.?">
-      <h1 className={styles.mainTitle}>¿QUÉ ES JUX.?</h1>
-      <div className={styles.grid}>
+      <motion.h1
+        className={styles.mainTitle}
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      >
+        ¿QUÉ ES JUX.?
+      </motion.h1>
+      <motion.div
+        className={styles.grid}
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-60px" }}
+      >
         {JUX_PILLARS.map((pillar, index) => (
-          <div key={index} className={styles.item}>
+          <motion.div key={index} className={styles.item} variants={itemVariants}>
             <h2 className={styles.itemTitle}>{pillar.title}</h2>
             <p className={styles.itemText}>{pillar.text}</p>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </section>
   );
 }

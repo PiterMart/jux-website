@@ -12,6 +12,8 @@ import ArtworkUploader from "../firebase/ArtworkUploader";
 import ArtworkList from "../firebase/ArtworkList";
 import ExhibitionUploader from "../firebase/ExhibitionUploader";
 import ExhibitionList from "../firebase/ExhibitionList";
+import EducacionUploader from "../firebase/EducacionUploader";
+import EducacionList from "../firebase/EducacionList";
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState("exhibitions");
@@ -118,6 +120,10 @@ export default function Home() {
             <button onClick={() => setActiveSection("equipo")} className={styles.navButton}>EQUIPO</button>
             <button onClick={() => setActiveSection("equipoList")} className={styles.navButton}>Lista Equipo</button>
           </div>
+          <div className={styles.navGroup}>
+            <button onClick={() => setActiveSection("educacion")} className={styles.navButton}>EDUCACIÓN</button>
+            <button onClick={() => setActiveSection("educacionList")} className={styles.navButton}>Lista Educación</button>
+          </div>
         </div>
 
         {/* EXHIBICIONES */}
@@ -165,6 +171,18 @@ export default function Home() {
         {activeSection === "equipoList" && (
           <div style={{ width: "100%", padding: "1rem", maxWidth: "1000px", margin: "auto" }}>
             <EquipoList />
+          </div>
+        )}
+
+        {/* EDUCACIÓN */}
+        {activeSection === "educacion" && (
+          <div style={{ width: "100%", padding: "1rem", maxWidth: "1000px", margin: "auto" }}>
+            <EducacionUploader />
+          </div>
+        )}
+        {activeSection === "educacionList" && (
+          <div style={{ width: "100%", padding: "1rem", maxWidth: "1000px", margin: "auto" }}>
+            <EducacionList />
           </div>
         )}
       </main>

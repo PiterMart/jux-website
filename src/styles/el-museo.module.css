@@ -1,0 +1,180 @@
+.pageContainer {
+  padding: 8rem 1.5rem 6rem 1.5rem;
+  max-width: 1300px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.equipoSection {
+  margin-top: 5rem;
+  border-top: 1px solid #111111;
+  padding-top: 4rem;
+}
+
+.sectionTitle {
+  font-family: var(--font-family-base), "Josefin Sans", sans-serif;
+  font-size: clamp(2.2rem, 4.5vw, 3.5rem);
+  font-weight: 800;
+  margin-bottom: 3rem;
+  color: var(--foreground, #111111);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.equipoList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.memberCard {
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.4);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.memberCard:hover {
+  background-color: rgba(255, 255, 255, 0.85);
+  border-color: var(--secondary-main, #1A2BFF);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(26, 43, 255, 0.08);
+}
+
+.memberCardActive {
+  background-color: #ffffff;
+  border-color: var(--secondary-main, #1A2BFF);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+}
+
+.memberHeader {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 1.5rem 2rem;
+}
+
+.avatarWrapper {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background-color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.memberCard:hover .avatarWrapper {
+  border-color: var(--secondary-main, #1A2BFF);
+  transform: scale(1.05);
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarFallback {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--secondary-main, #1A2BFF);
+  font-family: var(--font-family-base), "Josefin Sans", sans-serif;
+}
+
+.memberInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.memberName {
+  font-family: var(--font-family-base), "Josefin Sans", sans-serif;
+  font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+  font-weight: 700;
+  margin: 0;
+  color: var(--foreground, #111111);
+  transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  line-height: 1.1;
+}
+
+.memberCard:hover .memberName {
+  color: var(--secondary-main, #1A2BFF);
+}
+
+.memberRole {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #555555;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 0.2rem;
+}
+
+.toggleIcon {
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: var(--secondary-main, #1A2BFF);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.expandedDetails {
+  padding: 0 2rem 2rem calc(2rem + 100px + 2rem);
+  color: var(--foreground, #111111);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.bioParagraph {
+  margin-bottom: 0.75rem;
+  font-style: normal;
+  text-align: left;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .pageContainer {
+    padding: 6rem 1rem 4rem 1rem;
+  }
+
+  .equipoSection {
+    margin-top: 3.5rem;
+    padding-top: 2.5rem;
+  }
+
+  .memberHeader {
+    gap: 1.25rem;
+    padding: 1.25rem;
+  }
+
+  .avatarWrapper {
+    width: 70px;
+    height: 70px;
+  }
+
+  .memberName {
+    font-size: 1.35rem;
+  }
+
+  .memberRole {
+    font-size: 0.85rem;
+  }
+
+  .expandedDetails {
+    padding: 0 1.25rem 1.5rem 1.25rem;
+  }
+}

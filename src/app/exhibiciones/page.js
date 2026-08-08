@@ -1,179 +1,196 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { getDocs, collection } from "firebase/firestore";
+import { motion } from "framer-motion";
 import { firestore } from "../firebase/firebaseConfig";
 import { calculateExhibitionStatus, formatDateDisplay } from "../firebase/dateUtils";
 import pageStyles from "../../styles/page.module.css";
+import styles from "../../styles/exhibiciones.module.css";
 
-export const metadata = {
-  title: "Exhibiciones",
-  description: "Exhibiciones actuales y pasadas de la galería de arte.",
-};
+export default function ExhibicionesPage() {
+  const [exhibitions, setExhibitions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-export const revalidate = 60; // revalidate every 60 seconds
+  useEffect(() => {
+    async function fetchExhibitions() {
+      try {
+        const snap = await getDocs(collection(firestore, "exhibitions"));
+        const list = snap.docs.map((doc) => {
+          const data = doc.data();
+          const startStr =
+            data.startDate ||
+            (data.startTimestamp?.seconds
+              ? new Date(data.startTimestamp.seconds * 1000).toISOString().split("T")[0]
+              : "");
+          const endStr =
+            data.endDate ||
+            (data.endTimestamp?.seconds
+              ? new Date(data.endTimestamp.seconds * 1000).toISOString().split("T")[0]
+              : "");
+          const autoStatus = data.status || calculateExhibitionStatus(startStr, endStr);
 
-async function getExhibitions() {
-  try {
-    const snap = await getDocs(collection(firestore, "exhibitions"));
-    const list = snap.docs.map((doc) => {
-      const data = doc.data();
-      const startStr = data.startDate || (data.startTimestamp?.seconds ? new Date(data.startTimestamp.seconds * 1000).toISOString().split('T')[0] : '');
-      const endStr = data.endDate || (data.endTimestamp?.seconds ? new Date(data.endTimestamp.seconds * 1000).toISOString().split('T')[0] : '');
-      const autoStatus = data.status || calculateExhibitionStatus(startStr, endStr);
-
-      return {
-        id: doc.id,
-        ...JSON.parse(JSON.stringify(data)),
-        startDate: startStr,
-        endDate: endStr,
-        status: autoStatus,
-      };
-    });
-    return list;
-  } catch (error) {
-    console.error("Error fetching exhibitions:", error);
-    return [];
-  }
-}
-
-export default async function ExhibicionesPage() {
-  const exhibitions = await getExhibitions();
+          return {
+            id: doc.id,
+            ...data,
+            startDate: startStr,
+            endDate: endStr,
+            status: autoStatus,
+          };
+        });
+        setExhibitions(list);
+      } catch (error) {
+        console.error("Error fetching exhibitions:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchExhibitions();
+  }, []);
 
   const currentExhibitions = exhibitions.filter((ex) => ex.status === "actual");
   const pastExhibitions = exhibitions.filter((ex) => ex.status === "pasada" || !ex.status);
   const upcomingExhibitions = exhibitions.filter((ex) => ex.status === "proxima");
 
+  const featured = currentExhibitions[0];
+
   return (
-    <div className={pageStyles.page} style={{ padding: "3rem 1.5rem", maxWidth: "1200px", margin: "0 auto" }}>
-      {/* Header */}
-      <header style={{ marginBottom: "4rem", borderBottom: "1px solid #eee", paddingBottom: "2rem" }}>
-        <h1 style={{ fontSize: "3.5rem", fontWeight: "700", letterSpacing: "-0.02em", marginBottom: "1rem" }}>
-          EXHIBICIONES
-        </h1>
-        <p style={{ fontSize: "1.25rem", color: "#666", maxWidth: "700px" }}>
-          Programa de exhibiciones temporales, retrospectivas y proyectos especiales.
-        </p>
-      </header>
+    <div className={pageStyles.page}>
+      <main className={styles.pageContainer}>
+        {/* Current Exhibition Hero (Blank if no current exhibition) */}
+        {!loading && featured && (
+          <motion.section
+            className={styles.heroSection}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <div className={styles.heroImageContainer}>
+              {featured.coverImage && (
+                <img
+                  src={featured.coverImage}
+                  alt={featured.title}
+                  className={styles.heroImage}
+                />
+              )}
 
-      {/* Current Exhibition */}
-      <section style={{ marginBottom: "5rem" }}>
-        <h2 style={{ fontSize: "2rem", fontWeight: "700", marginBottom: "2rem", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "2px solid #111", paddingBottom: "0.5rem" }}>
-          Exhibición En Curso
-        </h2>
-
-        {currentExhibitions.length === 0 ? (
-          <p style={{ color: "#777", fontSize: "1.1rem" }}>No hay exhibición activa en este momento.</p>
-        ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))", gap: "3rem" }}>
-            {currentExhibitions.map((ex) => (
-              <div key={ex.id} style={{ display: "flex", flexDirection: "column", gap: "1.25rem", border: "1px solid #eee", padding: "1.5rem", borderRadius: "8px" }}>
-                {ex.coverImage && (
-                  <img
-                    src={ex.coverImage}
-                    alt={ex.title}
-                    style={{ width: "100%", height: "350px", objectFit: "cover", borderRadius: "6px" }}
-                  />
+              {/* Blue Box Overlay to the bottom-left corner */}
+              <div className={styles.blueInfoBox}>
+                <span className={styles.heroTag}>
+                  {featured.location || "Exhibición en Curso"}
+                </span>
+                <h1 className={styles.heroTitle}>{featured.title}</h1>
+                {featured.subtitle && (
+                  <p className={styles.heroSubtitle}>{featured.subtitle}</p>
                 )}
-                <div>
-                  <span style={{ background: "#000", color: "#fff", padding: "0.25rem 0.75rem", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.05em", borderRadius: "4px" }}>
-                    {ex.location || "En Curso"}
-                  </span>
-                  <h3 style={{ fontSize: "2rem", fontWeight: "700", marginTop: "0.75rem", marginBottom: "0.25rem" }}>
-                    {ex.title}
-                  </h3>
-                  {ex.subtitle && <p style={{ fontSize: "1.1rem", color: "#555", fontStyle: "italic", marginBottom: "0.5rem" }}>{ex.subtitle}</p>}
-                  {(ex.startDate || ex.endDate) && (
-                    <p style={{ fontSize: "0.95rem", color: "#777", fontWeight: "600" }}>
-                      {formatDateDisplay(ex.startDate)} {ex.endDate ? `— ${formatDateDisplay(ex.endDate)}` : ""}
-                    </p>
-                  )}
-                  {ex.curator && <p style={{ fontSize: "0.95rem", color: "#444", marginTop: "0.25rem" }}>Curaduría: {ex.curator}</p>}
-
-                  <div style={{ marginTop: "1.5rem" }}>
-                    <Link
-                      href={`/exhibiciones/${ex.id}`}
-                      style={{
-                        display: "inline-block",
-                        padding: "0.75rem 1.5rem",
-                        backgroundColor: "#111",
-                        color: "#fff",
-                        textDecoration: "none",
-                        borderRadius: "4px",
-                        fontWeight: "600",
-                        fontSize: "0.95rem",
-                      }}
-                    >
-                      Ver Exhibición →
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Upcoming Exhibitions (if any) */}
-      {upcomingExhibitions.length > 0 && (
-        <section style={{ marginBottom: "5rem" }}>
-          <h2 style={{ fontSize: "2rem", fontWeight: "700", marginBottom: "2rem", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "2px solid #111", paddingBottom: "0.5rem" }}>
-            Próximamente
-          </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "2rem" }}>
-            {upcomingExhibitions.map((ex) => (
-              <div key={ex.id} style={{ border: "1px solid #eee", padding: "1.5rem", borderRadius: "8px" }}>
-                <h3 style={{ fontSize: "1.5rem", fontWeight: "700" }}>{ex.title}</h3>
-                {(ex.startDate || ex.endDate) && (
-                  <p style={{ fontSize: "0.9rem", color: "#666", marginTop: "0.25rem" }}>
-                    {formatDateDisplay(ex.startDate)} {ex.endDate ? `— ${formatDateDisplay(ex.endDate)}` : ""}
+                {(featured.startDate || featured.endDate) && (
+                  <p className={styles.heroDates}>
+                    {formatDateDisplay(featured.startDate)}{" "}
+                    {featured.endDate ? `— ${formatDateDisplay(featured.endDate)}` : ""}
                   </p>
                 )}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Past Exhibitions / Archive */}
-      <section>
-        <h2 style={{ fontSize: "2rem", fontWeight: "700", marginBottom: "2rem", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "2px solid #111", paddingBottom: "0.5rem" }}>
-          Archivo de Exhibiciones
-        </h2>
-
-        {pastExhibitions.length === 0 ? (
-          <p style={{ color: "#777" }}>No hay exhibiciones pasadas en el archivo aún.</p>
-        ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "2.5rem" }}>
-            {pastExhibitions.map((ex) => (
-              <div key={ex.id} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                {ex.coverImage && (
-                  <img
-                    src={ex.coverImage}
-                    alt={ex.title}
-                    style={{ width: "100%", height: "220px", objectFit: "cover", borderRadius: "6px" }}
-                  />
+                {featured.curator && (
+                  <p className={styles.heroCurator}>Curaduría: {featured.curator}</p>
                 )}
-                <div>
-                  <h3 style={{ fontSize: "1.4rem", fontWeight: "700", margin: 0 }}>{ex.title}</h3>
-                  {(ex.startDate || ex.endDate) && (
-                    <p style={{ fontSize: "0.85rem", color: "#777", marginTop: "0.25rem" }}>
-                      {formatDateDisplay(ex.startDate)} {ex.endDate ? `— ${formatDateDisplay(ex.endDate)}` : ""}
-                    </p>
-                  )}
-                  <div style={{ marginTop: "1rem" }}>
-                    <Link
-                      href={`/exhibiciones/${ex.id}`}
-                      style={{ fontSize: "0.9rem", fontWeight: "700", color: "#111", textDecoration: "underline" }}
-                    >
-                      Ver Detalle →
-                    </Link>
-                  </div>
-                </div>
+                <Link href={`/exhibiciones/${featured.id}`} className={styles.heroCtaLink}>
+                  Ver Exhibición →
+                </Link>
               </div>
-            ))}
-          </div>
+            </div>
+          </motion.section>
         )}
-      </section>
+
+        {/* Upcoming Exhibitions */}
+        {!loading && upcomingExhibitions.length > 0 && (
+          <section className={styles.sectionBlock}>
+            <motion.h2
+              className={styles.sectionHeader}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            >
+              Próximamente
+            </motion.h2>
+            <div className={styles.archiveGrid}>
+              {upcomingExhibitions.map((ex) => (
+                <Link key={ex.id} href={`/exhibiciones/${ex.id}`} className={styles.archiveCard}>
+                  {ex.coverImage && (
+                    <div className={styles.archiveImageWrapper}>
+                      <img src={ex.coverImage} alt={ex.title} className={styles.archiveImage} />
+                    </div>
+                  )}
+                  <div>
+                    <h3 className={styles.archiveTitle}>{ex.title}</h3>
+                    {(ex.startDate || ex.endDate) && (
+                      <p className={styles.archiveDates}>
+                        {formatDateDisplay(ex.startDate)}{" "}
+                        {ex.endDate ? `— ${formatDateDisplay(ex.endDate)}` : ""}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Past Exhibitions / Archive */}
+        {!loading && pastExhibitions.length > 0 && (
+          <section className={styles.sectionBlock}>
+            <motion.h2
+              className={styles.sectionHeader}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            >
+              Archivo de Exhibiciones
+            </motion.h2>
+            <motion.div
+              className={styles.archiveGrid}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: { staggerChildren: 0.08, delayChildren: 0.05 },
+                },
+              }}
+            >
+              {pastExhibitions.map((ex) => (
+                <motion.div
+                  key={ex.id}
+                  variants={{
+                    hidden: { opacity: 0, y: 20 },
+                    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
+                  }}
+                >
+                  <Link href={`/exhibiciones/${ex.id}`} className={styles.archiveCard}>
+                    {ex.coverImage && (
+                      <div className={styles.archiveImageWrapper}>
+                        <img src={ex.coverImage} alt={ex.title} className={styles.archiveImage} />
+                      </div>
+                    )}
+                    <div>
+                      <h3 className={styles.archiveTitle}>{ex.title}</h3>
+                      {(ex.startDate || ex.endDate) && (
+                        <p className={styles.archiveDates}>
+                          {formatDateDisplay(ex.startDate)}{" "}
+                          {ex.endDate ? `— ${formatDateDisplay(ex.endDate)}` : ""}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </motion.div>
+          </section>
+        )}
+      </main>
     </div>
   );
 }

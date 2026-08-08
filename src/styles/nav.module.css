@@ -5,7 +5,7 @@
   width: 100vw;
   max-width: 100vw;
   z-index: 1000;
-  background-color: #ffffff;
+  background-color: var(--background, #D3D5CE);
   border-bottom: 1px solid #111111;
   box-sizing: border-box;
 }
@@ -26,6 +26,11 @@
   align-items: center;
   text-decoration: none;
   flex-shrink: 0;
+  transition: opacity 0.25s ease;
+}
+
+.logoLink:hover {
+  opacity: 0.8;
 }
 
 .navLogo {
@@ -62,8 +67,13 @@
   text-decoration: none;
   position: relative;
   padding-bottom: 4px;
-  transition: color 0.2s ease;
+  transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
+}
+
+.navLink:hover,
+.navLinkActive {
+  color: var(--secondary-main, #1A2BFF);
 }
 
 /* UNDERLINE ANIMATION (HOVER & ACTIVE STATE) */
@@ -74,7 +84,7 @@
   left: 0;
   width: 100%;
   height: 2px;
-  background-color: #111111;
+  background-color: var(--secondary-main, #1A2BFF);
   transform: scaleX(0);
   transform-origin: bottom right;
   transition: transform 0.25s ease-out;
@@ -84,10 +94,6 @@
 .navLinkActive::after {
   transform: scaleX(1);
   transform-origin: bottom left;
-}
-
-.navLinkActive {
-  font-weight: 700;
 }
 
 /* MOBILE TOGGLE BUTTON */
@@ -122,7 +128,7 @@
     right: 0;
     width: 100vw;
     height: 100vh;
-    background-color: #ffffff;
+    background-color: var(--background, #D3D5CE);
     display: flex;
     flex-direction: column;
     justify-content: center;

@@ -362,7 +362,7 @@ export default function ArtistUploader() {
               </div>
             ) : (
               <div className={styles.profilePicturePlaceholder}>
-                <p>📷 Arrastrá una imagen o haz clic para subir</p>
+                <p>Arrastrá una imagen o haz clic para subir</p>
                 <small>Formatos JPG, PNG, WEBP (Máx 5MB)</small>
               </div>
             )}
@@ -389,7 +389,7 @@ export default function ArtistUploader() {
             />
             {cvFile ? (
               <div className={styles.cvFileSelected}>
-                <p style={{ color: "green", fontWeight: "700" }}>📄 Archivo PDF seleccionado: {cvFile.name}</p>
+                <p style={{ color: "green", fontWeight: "700" }}>Archivo PDF seleccionado: {cvFile.name}</p>
                 <span>Hacé clic para cambiar archivo</span>
               </div>
             ) : cvUrl ? (
@@ -399,7 +399,7 @@ export default function ArtistUploader() {
               </div>
             ) : (
               <div className={styles.cvFilePlaceholder}>
-                <p>📄 Arrastrá tu CV en PDF aquí o hacé clic para explorar</p>
+                <p>Arrastrá tu CV en PDF aquí o hacé clic para explorar</p>
               </div>
             )}
           </div>

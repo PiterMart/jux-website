@@ -1,70 +1,51 @@
 .container {
-  padding-top: 8rem;
+  padding: 8rem 1.5rem 6rem 1.5rem;
   max-width: 1400px;
   margin: 0 auto;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
   box-sizing: border-box;
 }
 
-.header {
-  text-align: center;
-  margin-bottom: 4rem;
-}
-
-.title {
-  font-size: 3rem;
-  font-weight: 300;
-  margin: 0;
-}
-
-.subtitle {
-  color: #666;
-  font-size: 1.1rem;
-  margin-top: 0.5rem;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2.5rem;
-  padding: 0 1rem;
-}
-
-.cardLink {
-  text-decoration: none;
-  color: inherit;
-  display: block;
-}
-
-.card {
+.artistList {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 1.5rem;
-  border: 1px solid #eee;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  background-color: #fff;
+  gap: 2rem;
+  width: 100%;
 }
 
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+.artistRow {
+  border-bottom: 1px solid rgba(17, 17, 17, 0.15);
+  padding-bottom: 2rem;
+  width: 100%;
+}
+
+.artistHeader {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.5rem 0;
+  transition: all 0.25s ease;
 }
 
 .imageWrapper {
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
+  width: clamp(90px, 12vw, 150px);
+  height: clamp(90px, 12vw, 150px);
+  border-radius: 4px;
   overflow: hidden;
-  background-color: #f5f5f5;
-  margin-bottom: 1.5rem;
+  background-color: #dcdfd8;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+}
+
+.artistHeader:hover .imageWrapper {
+  transform: scale(1.04);
 }
 
 .artistImage {
@@ -74,143 +55,207 @@
   display: block;
 }
 
-.placeholderIcon {
-  font-size: 2.5rem;
-  color: #ccc;
+.monogram {
+  font-family: var(--font-family-base), "Josefin Sans", sans-serif;
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 700;
+  color: var(--secondary-main, #1A2BFF);
+}
+
+.nameBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
 }
 
 .artistName {
-  font-size: 1.25rem;
-  font-weight: 400;
-  margin: 0 0 0.25rem 0;
-  text-align: center;
+  font-family: var(--font-family-base), "Josefin Sans", sans-serif;
+  font-size: clamp(2.2rem, 5.5vw, 4.5rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+  margin: 0;
+  color: var(--foreground, #111111);
+  text-transform: uppercase;
+  transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.artistHeader:hover .artistName,
+.artistHeaderActive .artistName {
+  color: var(--secondary-main, #1A2BFF);
 }
 
 .artistOrigin {
-  font-size: 0.85rem;
-  color: #777;
+  font-size: clamp(0.9rem, 1.3vw, 1.15rem);
+  font-weight: 600;
+  color: #555555;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin: 0;
+  letter-spacing: 0.08em;
+  margin-top: 0.5rem;
 }
 
-/* Mobile Devices: Full Width Image with Unconstrained Height & Name Underneath */
-@media (max-width: 768px) {
-  .container {
-    padding-top: 6rem;
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
-  .header {
-    margin-bottom: 2.5rem;
-  }
-
-  .title {
-    font-size: 2.25rem;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
-    gap: 2.5rem;
-    padding: 0;
-  }
-
-  .card {
-    padding: 0 0 1.5rem 0;
-    border: none;
-    border-bottom: 1px solid #eee;
-    border-radius: 0;
-    background-color: transparent;
-    align-items: flex-start;
-  }
-
-  .card:hover {
-    transform: none;
-    box-shadow: none;
-  }
-
-  .imageWrapper {
-    width: 100%;
-    height: auto;
-    max-height: none;
-    aspect-ratio: auto;
-    border-radius: 4px;
-    margin-bottom: 0.75rem;
-  }
-
-  .artistImage {
-    width: 100%;
-    height: auto;
-    max-height: none;
-    object-fit: contain;
-  }
-
-  .artistName {
-    font-size: 1.35rem;
-    font-weight: 600;
-    text-align: left;
-    margin-top: 0.5rem;
-    margin-bottom: 0.2rem;
-  }
-
-  .artistOrigin {
-    text-align: left;
-  }
+.toggleSign {
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 400;
+  color: var(--secondary-main, #1A2BFF);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0 1rem;
 }
 
-/* Artist Detail Page Responsive Layout */
-.detailContainer {
-  padding-top: 8rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+/* In-Page Expanded Artist Detail Section */
+.artistDetails {
+  padding-top: 2.5rem;
+  padding-left: clamp(0px, 14vw, 175px);
+  width: 100%;
   box-sizing: border-box;
 }
 
-.profileGrid {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 3rem;
-  margin-bottom: 5rem;
-  align-items: start;
+.metadataGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  font-size: 1rem;
+  color: #444444;
 }
 
-.profileImageWrapper {
+.metadataItem strong {
+  color: var(--foreground, #111111);
+}
+
+.bioSection {
+  margin-bottom: 2.5rem;
+  max-width: 900px;
+}
+
+.sectionHeading {
+  font-family: var(--font-family-base), "Josefin Sans", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--secondary-main, #1A2BFF);
+  margin-bottom: 0.75rem;
+}
+
+.bioParagraph {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--foreground, #111111);
+  margin-bottom: 0.75rem;
+  font-style: normal;
+  text-align: left;
   width: 100%;
-  height: auto;
-  background-color: #f5f5f5;
+}
+
+.statementParagraph {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #333333;
+  font-style: italic;
+  margin-bottom: 0.75rem;
+  text-align: left;
+  width: 100%;
+}
+
+.cvButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.4rem;
+  border: 1px solid var(--foreground, #111111);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--foreground, #111111);
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-bottom: 2.5rem;
+}
+
+.cvButton:hover {
+  background-color: var(--secondary-main, #1A2BFF);
+  border-color: var(--secondary-main, #1A2BFF);
+  color: #ffffff;
+}
+
+.artworksGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.artworkThumbnailCard {
+  border: 1px solid rgba(17, 17, 17, 0.1);
   border-radius: 4px;
   overflow: hidden;
-  margin-bottom: 1.5rem;
+  text-decoration: none;
+  color: inherit;
+  background: #ffffff;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.profileImage {
+.artworkThumbnailCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.artworkThumbImg {
   width: 100%;
-  height: auto;
-  max-height: none;
+  aspect-ratio: 1/1;
   object-fit: contain;
+  background-color: #f9f9f9;
   display: block;
 }
 
+.artworkThumbInfo {
+  padding: 0.75rem;
+}
+
+.artworkThumbTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.artworkThumbMeta {
+  font-size: 0.8rem;
+  color: #666666;
+  margin-top: 0.2rem;
+}
+
 @media (max-width: 768px) {
-  .detailContainer {
-    padding-top: 6rem;
-    padding-left: 1rem;
-    padding-right: 1rem;
+  .container {
+    padding: 6rem 1rem 4rem 1rem;
   }
 
-  .profileGrid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    margin-bottom: 3rem;
+  .artistHeader {
+    gap: 1.25rem;
   }
 
-  .profileImageWrapper {
-    height: auto;
-    max-height: none;
-    aspect-ratio: auto;
-    margin-bottom: 1rem;
+  .imageWrapper {
+    width: 80px;
+    height: 80px;
+  }
+
+  .artistName {
+    font-size: clamp(1.8rem, 8vw, 2.5rem);
+  }
+
+  .artistDetails {
+    padding-left: 0;
+    padding-top: 1.5rem;
+  }
+
+  .artworksGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
   }
 }

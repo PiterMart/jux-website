@@ -78,8 +78,8 @@ export default function ArtistDetailPage({ params }) {
               {artist.profilePicture ? (
                 <img src={artist.profilePicture} alt={artist.name} className={styles.profileImage} />
               ) : (
-                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "4rem", color: "#ccc" }}>
-                  👤
+                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "3rem", fontWeight: "700", color: "var(--secondary-main, #1A2BFF)", fontFamily: "var(--font-family-base)" }}>
+                  {(artist.name || "A").charAt(0)}
                 </div>
               )}
             </div>
@@ -138,7 +138,7 @@ export default function ArtistDetailPage({ params }) {
                   e.currentTarget.style.color = "#000";
                 }}
               >
-                📄 Descargar CV (PDF)
+                Descargar CV (PDF) →
               </a>
             )}
           </div>
@@ -215,8 +215,8 @@ export default function ArtistDetailPage({ params }) {
                           style={{ width: "100%", height: "100%", objectFit: "contain" }}
                         />
                       ) : (
-                        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#ccc" }}>
-                          🖼️
+                        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#888", fontSize: "0.85rem" }}>
+                          Sin imagen
                         </div>
                       )}
                     </div>

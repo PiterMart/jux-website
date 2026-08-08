@@ -1,77 +1,91 @@
-import React from "react";
-import pageStyles from "../../styles/page.module.css";
+"use client";
 
-export const metadata = {
-  title: "Educación",
-  description: "Programas educativos, visitas guiadas y talleres de la galería.",
-};
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { firestore } from "../firebase/firebaseConfig";
+import { collection, getDocs } from "firebase/firestore";
+import pageStyles from "../../styles/page.module.css";
+import styles from "../../styles/educacion.module.css";
 
 export default function EducacionPage() {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEducacion = async () => {
+      try {
+        const snap = await getDocs(collection(firestore, "educacion"));
+        const list = snap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        // Sort by order/creation/updatedAt if available
+        list.sort((a, b) => {
+          const timeA = a.createdAt || a.updatedAt || "";
+          const timeB = b.createdAt || b.updatedAt || "";
+          return timeB.localeCompare(timeA);
+        });
+        setItems(list);
+      } catch (err) {
+        console.error("Error fetching educacion items:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEducacion();
+  }, []);
+
+  const formatHashtags = (hashtags) => {
+    if (!hashtags || !Array.isArray(hashtags) || hashtags.length === 0) return "";
+    return hashtags
+      .map((tag) => tag.replace(/^#+/, "").trim())
+      .filter(Boolean)
+      .join(" – ");
+  };
+
   return (
-    <div className={pageStyles.page} style={{ padding: "3rem 1.5rem", maxWidth: "1200px", margin: "0 auto" }}>
-      {/* Header */}
-      <header style={{ marginBottom: "4rem", borderBottom: "1px solid #eee", paddingBottom: "2rem" }}>
-        <h1 style={{ fontSize: "3.5rem", fontWeight: "700", letterSpacing: "-0.02em", marginBottom: "1rem" }}>
-          EDUCACIÓN
-        </h1>
-        <p style={{ fontSize: "1.25rem", color: "#666", maxWidth: "750px" }}>
-          Propuestas pedagógicas, talleres, charlas con artistas y visitas guiadas para escuelas, universidades y público general.
-        </p>
-      </header>
-
-      {/* Grid of Programs */}
-      <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "3rem", marginBottom: "5rem" }}>
-        <div style={{ background: "#fafafa", padding: "2.5rem", borderRadius: "8px" }}>
-          <h2 style={{ fontSize: "1.5rem", fontWeight: "700", marginBottom: "1rem", textTransform: "uppercase" }}>
-            Visitas Guiadas y Mediadas
-          </h2>
-          <p style={{ fontSize: "1.05rem", lineHeight: "1.7", color: "#444" }}>
-            Recorridos participativos orientados a promover la reflexión crítica y la apreciación estética a partir de las exhibiciones vigentes.
+    <div className={pageStyles.page}>
+      <main className={styles.container}>
+        {loading ? (
+          <p className={styles.statusMessage}>Cargando textos...</p>
+        ) : items.length === 0 ? (
+          <p className={styles.statusMessage}>
+            No hay textos publicados por el momento.
           </p>
-        </div>
-
-        <div style={{ background: "#fafafa", padding: "2.5rem", borderRadius: "8px" }}>
-          <h2 style={{ fontSize: "1.5rem", fontWeight: "700", marginBottom: "1rem", textTransform: "uppercase" }}>
-            Talleres & Seminars
-          </h2>
-          <p style={{ fontSize: "1.05rem", lineHeight: "1.7", color: "#444" }}>
-            Espacios prácticos y teóricos dictados por artistas e investigadores invitados, enfocados en técnicas contemporáneas y teoría del arte.
-          </p>
-        </div>
-
-        <div style={{ background: "#fafafa", padding: "2.5rem", borderRadius: "8px" }}>
-          <h2 style={{ fontSize: "1.5rem", fontWeight: "700", marginBottom: "1rem", textTransform: "uppercase" }}>
-            Encuentros con Artistas
-          </h2>
-          <p style={{ fontSize: "1.05rem", lineHeight: "1.7", color: "#444" }}>
-            Conversatorios de entrada libre y gratuita para conocer de cerca los procesos creativos y los trasfondos de las obras.
-          </p>
-        </div>
-      </section>
-
-      {/* Contact Banner for Educational Visits */}
-      <section style={{ border: "2px solid #111", padding: "3rem", borderRadius: "8px", textAlign: "center" }}>
-        <h2 style={{ fontSize: "2rem", fontWeight: "700", marginBottom: "1rem" }}>
-          ¿Querés coordinar una visita educativa?
-        </h2>
-        <p style={{ fontSize: "1.15rem", color: "#555", marginBottom: "1.5rem" }}>
-          Escribinos para agendar recorridos para instituciones educativas y grupos numerosos.
-        </p>
-        <a
-          href="mailto:educacion@galeria.com"
-          style={{
-            display: "inline-block",
-            padding: "0.85rem 2rem",
-            backgroundColor: "#111",
-            color: "#fff",
-            borderRadius: "4px",
-            fontWeight: "700",
-            textDecoration: "none",
-          }}
-        >
-          Consultar por Visitas
-        </a>
-      </section>
+        ) : (
+          <motion.div
+            className={styles.list}
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
+            }}
+          >
+            {items.map((item) => (
+              <motion.a
+                key={item.id}
+                href={item.pdfUrl || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.itemRow}
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
+                }}
+              >
+                <h2 className={styles.itemTitle}>{item.title}</h2>
+                {item.hashtags && item.hashtags.length > 0 && (
+                  <span className={styles.itemHashtags}>
+                    {formatHashtags(item.hashtags)}
+                  </span>
+                )}
+              </motion.a>
+            ))}
+          </motion.div>
+        )}
+      </main>
     </div>
   );
 }

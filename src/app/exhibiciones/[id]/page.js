@@ -107,7 +107,7 @@ export default async function ExhibitionDetailPage({ params }) {
                 fontSize: "1rem",
               }}
             >
-              🌐 Ver Recorrido Virtual 360° →
+              Ver Recorrido Virtual 360° →
             </a>
           </div>
         )}

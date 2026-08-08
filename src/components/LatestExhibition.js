@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { collection, getDocs } from "firebase/firestore";
 import { firestore } from "../app/firebase/firebaseConfig";
 import { calculateExhibitionStatus, formatDateDisplay } from "../app/firebase/dateUtils";
@@ -21,11 +22,49 @@ const DEFAULT_EXHIBITION = {
   ],
 };
 
-export default function LatestExhibition() {
-  const [exhibition, setExhibition] = useState(DEFAULT_EXHIBITION);
+const bannerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.35,
+    },
+  },
+};
+
+const backgroundVariants = {
+  hidden: { scaleX: 0, originX: 0 },
+  visible: {
+    scaleX: 1,
+    originX: 0,
+    transition: {
+      duration: 0.85,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+};
+
+const textVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.65,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+};
+
+export default function LatestExhibition({ initialExhibition = null }) {
+  const [exhibition, setExhibition] = useState(initialExhibition || DEFAULT_EXHIBITION);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
+    if (initialExhibition) {
+      setExhibition(initialExhibition);
+      return;
+    }
+
     async function fetchLatestExhibition() {
       try {
         const snap = await getDocs(collection(firestore, "exhibitions"));
@@ -100,7 +139,7 @@ export default function LatestExhibition() {
     }
 
     fetchLatestExhibition();
-  }, []);
+  }, [initialExhibition]);
 
   const images = exhibition.images || DEFAULT_EXHIBITION.images;
   const hasMultipleImages = images.length > 1;
@@ -123,53 +162,79 @@ export default function LatestExhibition() {
 
   return (
     <section className={styles.container} aria-label="Exhibición Destacada">
-      <Link href={exhibitionHref} className={styles.cardLink}>
-        <div className={styles.imageWrapper}>
-          <img
-            src={images[currentImageIndex]}
-            alt={`${exhibition.title} - Imagen ${currentImageIndex + 1}`}
-            className={styles.image}
-          />
+      <div className={styles.innerContent}>
+        <Link href={exhibitionHref} className={styles.cardLink}>
+          <motion.div
+            className={styles.imageWrapper}
+            initial={{ opacity: 0, y: 80 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.15 }}
+            transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <img
+              src={images[currentImageIndex]}
+              alt={`${exhibition.title} - Imagen ${currentImageIndex + 1}`}
+              className={styles.image}
+            />
 
-          {hasMultipleImages && (
-            <>
-              <button
-                onClick={handlePrevImage}
-                className={`${styles.navButton} ${styles.prevButton}`}
-                aria-label="Imagen anterior"
-              >
-                <svg className={styles.arrowIcon} viewBox="0 0 24 24">
-                  <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-                </svg>
-              </button>
-              <button
-                onClick={handleNextImage}
-                className={`${styles.navButton} ${styles.nextButton}`}
-                aria-label="Imagen siguiente"
-              >
-                <svg className={styles.arrowIcon} viewBox="0 0 24 24">
-                  <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
-                </svg>
-              </button>
-            </>
-          )}
-        </div>
-
-        <div className={styles.details}>
-          <div className={styles.headerRow}>
-            <h2 className={styles.title}>{exhibition.title}</h2>
-            {exhibition.location && (
+            {hasMultipleImages && (
               <>
-                <span className={styles.separator}>-</span>
-                <span className={styles.location}>{exhibition.location}</span>
+                <button
+                  onClick={handlePrevImage}
+                  className={`${styles.navButton} ${styles.prevButton}`}
+                  aria-label="Imagen anterior"
+                >
+                  <svg className={styles.arrowIcon} viewBox="0 0 24 24">
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={handleNextImage}
+                  className={`${styles.navButton} ${styles.nextButton}`}
+                  aria-label="Imagen siguiente"
+                >
+                  <svg className={styles.arrowIcon} viewBox="0 0 24 24">
+                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+                  </svg>
+                </button>
               </>
             )}
-          </div>
-          {exhibition.dateDisplay && (
-            <p className={styles.date}>{exhibition.dateDisplay}</p>
-          )}
-        </div>
-      </Link>
+          </motion.div>
+
+          <motion.div
+            className={styles.detailsWrapper}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.15 }}
+            variants={bannerVariants}
+          >
+            {/* Sliding Blue Background */}
+            <motion.div
+              className={styles.detailsBackground}
+              variants={backgroundVariants}
+            />
+
+            {/* Text Content */}
+            <motion.div
+              className={styles.detailsContent}
+              variants={textVariants}
+            >
+              <div className={styles.headerRow}>
+                <h2 className={styles.title}>{exhibition.title}</h2>
+                {exhibition.location && (
+                  <>
+                    <span className={styles.separator}>-</span>
+                    <span className={styles.location}>{exhibition.location}</span>
+                  </>
+                )}
+              </div>
+              {exhibition.dateDisplay && (
+                <p className={styles.date}>{exhibition.dateDisplay}</p>
+              )}
+            </motion.div>
+          </motion.div>
+        </Link>
+      </div>
     </section>
   );
 }

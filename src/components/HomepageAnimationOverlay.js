@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import styles from "../styles/HomepageAnimationOverlay.module.css";
 
 export default function HomepageAnimationOverlay() {
@@ -9,6 +9,7 @@ export default function HomepageAnimationOverlay() {
   const [isFullyDismissed, setIsFullyDismissed] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const isDismissingRef = useRef(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -21,7 +22,10 @@ export default function HomepageAnimationOverlay() {
     };
     checkTouch();
     window.addEventListener("resize", checkTouch);
-    return () => window.removeEventListener("resize", checkTouch);
+
+    return () => {
+      window.removeEventListener("resize", checkTouch);
+    };
   }, []);
 
   // Desktop mouse proximity calculation
@@ -62,7 +66,10 @@ export default function HomepageAnimationOverlay() {
   }, [handleMouseMove, isFullyDismissed, isTouchDevice, dismissedQuadrants]);
 
   // One-by-one staggered dismissal for mobile & click interactions
-  const triggerStaggeredDismissal = (startIndex = 0) => {
+  const triggerStaggeredDismissal = useCallback((startIndex = 0) => {
+    if (isDismissingRef.current) return;
+    isDismissingRef.current = true;
+
     const order = [0, 1, 2, 3];
     // Reorder sequence starting with the tapped quadrant index if specified
     const sequence = [
@@ -84,7 +91,18 @@ export default function HomepageAnimationOverlay() {
     setTimeout(() => {
       setIsFullyDismissed(true);
     }, 4 * 240 + 1000);
-  };
+  }, []);
+
+  // Auto-trigger slide out after 6 seconds if user hasn't clicked yet
+  useEffect(() => {
+    if (!isMounted || isFullyDismissed || dismissedQuadrants.some(Boolean)) return;
+
+    const timer = setTimeout(() => {
+      triggerStaggeredDismissal(0);
+    }, 6000);
+
+    return () => clearTimeout(timer);
+  }, [isMounted, isFullyDismissed, dismissedQuadrants, triggerStaggeredDismissal]);
 
   const handleQuadrantClick = (index, e) => {
     e.stopPropagation();

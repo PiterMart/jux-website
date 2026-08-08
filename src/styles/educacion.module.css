@@ -1,0 +1,89 @@
+.container {
+  padding-top: 8rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-bottom: 8rem;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 3.5rem;
+  width: 100%;
+}
+
+.itemRow {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-decoration: none;
+  color: var(--foreground, #111111);
+  cursor: pointer;
+  transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.itemTitle {
+  font-family: var(--font-family-base), "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(2.5rem, 5.5vw, 5rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+  margin: 0;
+  color: inherit;
+  transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.itemHashtags {
+  font-family: var(--font-family-base), "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(0.95rem, 1.8vw, 1.35rem);
+  font-weight: 400;
+  line-height: 1.2;
+  margin-top: 0.4rem;
+  margin-left: 0.15rem;
+  color: inherit;
+  transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: -0.01em;
+}
+
+.itemRow:hover,
+.itemRow:hover .itemTitle,
+.itemRow:hover .itemHashtags {
+  color: var(--secondary-main, #1A2BFF);
+}
+
+.statusMessage {
+  text-align: left;
+  padding: 4rem 0;
+  color: #777;
+  font-size: 1.15rem;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding-top: 6rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 5rem;
+  }
+
+  .list {
+    gap: 2.5rem;
+  }
+
+  .itemTitle {
+    font-size: clamp(2rem, 8.5vw, 3.2rem);
+  }
+
+  .itemHashtags {
+    font-size: 0.9rem;
+    margin-top: 0.3rem;
+  }
+}

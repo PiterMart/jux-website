@@ -1,0 +1,221 @@
+.pageContainer {
+  padding: 7rem 1.5rem 6rem 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Big Hero Featured Current Exhibition */
+.heroSection {
+  margin-bottom: 6rem;
+  width: 100%;
+}
+
+.heroImageContainer {
+  position: relative;
+  width: 100%;
+  height: clamp(480px, 70vh, 750px);
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #222222;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
+}
+
+.heroImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.heroImageContainer:hover .heroImage {
+  transform: scale(1.02);
+}
+
+/* Blue Box Overlay on Bottom-Left Corner */
+.blueInfoBox {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 2.5rem;
+  max-width: min(560px, calc(100% - 5rem));
+  background-color: var(--secondary-main, #1A2BFF);
+  color: #ffffff;
+  padding: 2rem 2.5rem;
+  border-radius: 4px;
+  z-index: 10;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-sizing: border-box;
+}
+
+.heroTag {
+  font-family: var(--font-family-base), "Josefin Sans", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.heroTitle {
+  font-family: var(--font-family-base), "Josefin Sans", sans-serif;
+  font-size: clamp(2rem, 3.5vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.05;
+  margin: 0;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.heroSubtitle {
+  font-size: 1.15rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-style: italic;
+  margin: 0;
+}
+
+.heroDates {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 0.25rem;
+}
+
+.heroCurator {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.heroCtaLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  font-family: var(--font-family-base), "Josefin Sans", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  width: fit-content;
+  border-bottom: 2px solid #ffffff;
+  padding-bottom: 2px;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.heroCtaLink:hover {
+  opacity: 0.8;
+  transform: translateX(4px);
+  color: #ffffff;
+}
+
+/* Sections for Upcoming & Archive */
+.sectionBlock {
+  margin-bottom: 6rem;
+}
+
+.sectionHeader {
+  font-family: var(--font-family-base), "Josefin Sans", sans-serif;
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--foreground, #111111);
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid #111111;
+  padding-bottom: 0.75rem;
+}
+
+.archiveGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 3rem 2.5rem;
+}
+
+.archiveCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.archiveCard:hover {
+  transform: translateY(-4px);
+}
+
+.archiveImageWrapper {
+  width: 100%;
+  height: 240px;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #e5e5e5;
+}
+
+.archiveImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.archiveCard:hover .archiveImage {
+  transform: scale(1.04);
+}
+
+.archiveTitle {
+  font-family: var(--font-family-base), "Josefin Sans", sans-serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+  transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.archiveCard:hover .archiveTitle {
+  color: var(--secondary-main, #1A2BFF);
+}
+
+.archiveDates {
+  font-size: 0.9rem;
+  color: #666666;
+  margin-top: 0.35rem;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .pageContainer {
+    padding: 5.5rem 1rem 4rem 1rem;
+  }
+
+  .heroImageContainer {
+    height: 440px;
+  }
+
+  .blueInfoBox {
+    bottom: 1.25rem;
+    left: 1.25rem;
+    right: 1.25rem;
+    max-width: none;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .heroTitle {
+    font-size: 1.85rem;
+  }
+
+  .heroSubtitle {
+    font-size: 1rem;
+  }
+
+  .archiveGrid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}

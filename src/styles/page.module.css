@@ -256,13 +256,12 @@
   flex-direction: column;
   align-items: center;
   justify-items: center;
-  gap: 64px;
+  gap: 0;
   position: relative;
   width: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow-x: clip;
   padding: 0;
-  margin-bottom: 5rem;
+  margin-bottom: 0;
   z-index: 2;
   background-color: transparent;
 }

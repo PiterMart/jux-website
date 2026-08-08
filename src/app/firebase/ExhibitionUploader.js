@@ -560,7 +560,7 @@ export default function ExhibitionUploader() {
               </div>
             ) : (
               <div className={styles.profilePicturePlaceholder}>
-                <p>🖼️ Arrastrá una imagen de portada o haz clic para subir</p>
+                <p>Arrastrá una imagen de portada o haz clic para subir</p>
               </div>
             )}
           </div>
@@ -586,7 +586,7 @@ export default function ExhibitionUploader() {
             />
             {pdfFile ? (
               <div className={styles.cvFileSelected}>
-                <p style={{ color: "green", fontWeight: "700" }}>📄 Archivo PDF seleccionado: {pdfFile.name}</p>
+                <p style={{ color: "green", fontWeight: "700" }}>Archivo PDF seleccionado: {pdfFile.name}</p>
                 <span>Hacé clic para cambiar archivo</span>
               </div>
             ) : pdfUrl ? (
@@ -596,7 +596,7 @@ export default function ExhibitionUploader() {
               </div>
             ) : (
               <div className={styles.cvFilePlaceholder}>
-                <p>📄 Arrastrá el catálogo en PDF aquí o hacé clic para explorar</p>
+                <p>Arrastrá el catálogo en PDF aquí o hacé clic para explorar</p>
               </div>
             )}
           </div>
@@ -625,7 +625,7 @@ export default function ExhibitionUploader() {
               }}
             />
             <div className={styles.cvFilePlaceholder}>
-              <p>📸 Arrastrá fotos de la sala o del registro aquí</p>
+              <p>Arrastrá fotos de la sala o del registro aquí</p>
             </div>
           </div>
 

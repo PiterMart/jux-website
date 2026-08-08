@@ -284,7 +284,7 @@ export default function EquipoUploader() {
               </div>
             ) : (
               <div className={styles.profilePicturePlaceholder}>
-                <p>📷 Arrastrá una foto de perfil o haz clic para subir</p>
+                <p>Arrastrá una foto de perfil o haz clic para subir</p>
               </div>
             )}
           </div>

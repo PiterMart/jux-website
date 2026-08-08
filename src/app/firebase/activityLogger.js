@@ -26,6 +26,7 @@ export const RESOURCE_TYPES = {
   MEMBER: "member",
   EVENT: "event",
   NOTA: "nota",
+  EDUCACION: "educacion",
 };
 
 /**

@@ -476,7 +476,7 @@ export default function ArtworkUploader() {
               </div>
             ) : (
               <div className={styles.profilePicturePlaceholder}>
-                <p>🖼️ Arrastrá la imagen principal o haz clic para subir</p>
+                <p>Arrastrá la imagen principal o haz clic para subir</p>
               </div>
             )}
           </div>
@@ -505,7 +505,7 @@ export default function ArtworkUploader() {
               }}
             />
             <div className={styles.cvFilePlaceholder}>
-              <p>📸 Arrastrá imágenes de detalle aquí o hacé clic para explorar</p>
+              <p>Arrastrá imágenes de detalle aquí o hacé clic para explorar</p>
             </div>
           </div>
 

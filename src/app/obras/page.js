@@ -1,6 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { firestore } from "../firebase/firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 import styles from "../../styles/page.module.css";
@@ -51,16 +53,7 @@ export default function ObrasCatalogPage() {
 
   return (
     <div className={styles.page}>
-      <main className={styles.main} style={{ paddingTop: "12rem", maxWidth: "1400px" }}>
-        <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-          <h1 className={styles.sectionTitle} style={{ fontSize: "3rem", fontWeight: "300" }}>
-            Catálogo de Obras
-          </h1>
-          <p style={{ color: "#666", fontSize: "1.1rem", marginTop: "0.5rem" }}>
-            Explorá nuestra colección de arte contemporáneo
-          </p>
-        </div>
-
+      <main className={styles.main} style={{ paddingTop: "8rem", maxWidth: "1400px" }}>
         {/* Filter Controls */}
         <div
           style={{
@@ -125,39 +118,52 @@ export default function ObrasCatalogPage() {
         {loading ? (
           <p style={{ textAlign: "center", padding: "4rem 0", color: "#888" }}>Cargando catálogo...</p>
         ) : filteredArtworks.length === 0 ? (
-          <p style={{ textAlign: "center", padding: "4rem 0", color: "#888" }}>No se encontraron obras con los filtros seleccionados.</p>
+          <p style={{ textAlign: "center", padding: "4rem 0", color: "#888" }}>
+            No se encontraron obras con los filtros seleccionados.
+          </p>
         ) : (
-          <div
+          <motion.div
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
               gap: "2.5rem",
               padding: "0 1rem",
             }}
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
+            }}
           >
             {filteredArtworks.map((art) => (
-              <div
+              <motion.div
                 key={art.id}
                 style={{
-                  border: "1px solid #eee",
+                  border: "1px solid rgba(17, 17, 17, 0.12)",
                   borderRadius: "4px",
                   overflow: "hidden",
                   transition: "all 0.3s ease",
-                  backgroundColor: "#fff",
+                  backgroundColor: "rgba(255, 255, 255, 0.7)",
                   display: "flex",
                   flexDirection: "column",
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-4px)";
-                  e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.08)";
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
                 }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
+                whileHover={{ y: -4, boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}
               >
                 <Link href={`/obras/${art.id}`} style={{ textDecoration: "none", color: "inherit", flex: 1 }}>
-                  <div style={{ width: "100%", aspectRatio: "1/1", backgroundColor: "#f9f9f9", overflow: "hidden", position: "relative" }}>
+                  <div
+                    style={{
+                      width: "100%",
+                      aspectRatio: "1/1",
+                      backgroundColor: "#f9f9f9",
+                      overflow: "hidden",
+                      position: "relative",
+                    }}
+                  >
                     {art.coverImage || art.url ? (
                       <img
                         src={art.coverImage || art.url}
@@ -165,8 +171,18 @@ export default function ObrasCatalogPage() {
                         style={{ width: "100%", height: "100%", objectFit: "contain" }}
                       />
                     ) : (
-                      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#ccc" }}>
-                        🖼️
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#888",
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        Sin imagen
                       </div>
                     )}
                     {art.availability_status && (
@@ -194,15 +210,19 @@ export default function ObrasCatalogPage() {
                     )}
                   </div>
                   <div style={{ padding: "1.25rem" }}>
-                    <h3 style={{ fontSize: "1.2rem", fontWeight: "400", marginBottom: "0.25rem" }}>{art.title}</h3>
-                    {art.artistName && <p style={{ fontSize: "0.95rem", color: "#555", marginBottom: "0.25rem" }}>{art.artistName}</p>}
-                    {art.year && <p style={{ fontSize: "0.85rem", color: "#888" }}>{art.year}</p>}
-                    {art.technique && <p style={{ fontSize: "0.85rem", color: "#888" }}>{art.technique}</p>}
+                    <h3 style={{ fontSize: "1.2rem", fontWeight: "700", fontFamily: "var(--font-family-base)", marginBottom: "0.25rem" }}>
+                      {art.title}
+                    </h3>
+                    {art.artistName && (
+                      <p style={{ fontSize: "0.95rem", color: "#555", marginBottom: "0.25rem" }}>{art.artistName}</p>
+                    )}
+                    {art.year && <p style={{ fontSize: "0.85rem", color: "#888", margin: 0 }}>{art.year}</p>}
+                    {art.technique && <p style={{ fontSize: "0.85rem", color: "#888", margin: 0 }}>{art.technique}</p>}
                   </div>
                 </Link>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </main>
     </div>

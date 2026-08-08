@@ -124,7 +124,7 @@ export default function ArtworkDetailPage({ params }) {
               {mainImage ? (
                 <img src={mainImage} alt={artwork.title} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
               ) : (
-                <span style={{ fontSize: "4rem", color: "#ccc" }}>🖼️</span>
+                <span style={{ fontSize: "0.95rem", color: "#888", fontWeight: "600" }}>Sin imagen</span>
               )}
             </div>
 
@@ -263,7 +263,7 @@ export default function ArtworkDetailPage({ params }) {
                   e.currentTarget.style.transform = "translateY(0)";
                 }}
               >
-                📩 Consultar / Adquirir esta Obra
+                Consultar / Adquirir esta Obra →
               </button>
             )}
           </div>

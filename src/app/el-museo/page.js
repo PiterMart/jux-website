@@ -1,94 +1,149 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import { getDocs, collection } from "firebase/firestore";
+import { motion, AnimatePresence } from "framer-motion";
 import { firestore } from "../firebase/firebaseConfig";
 import QueEsJux from "../../components/QueEsJux";
 import pageStyles from "../../styles/page.module.css";
+import styles from "../../styles/el-museo.module.css";
 
-export const metadata = {
-  title: "El Museo | JUX",
-  description: "Un museo judío contemporáneo argentino, pero expandido.",
-};
+export default function ElMuseoPage() {
+  const [equipo, setEquipo] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [expandedMemberId, setExpandedMemberId] = useState(null);
 
-export const revalidate = 60; // revalidate every 60 seconds
+  useEffect(() => {
+    async function fetchEquipo() {
+      try {
+        const snap = await getDocs(collection(firestore, "equipo"));
+        const members = snap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        members.sort((a, b) => (a.order || 0) - (b.order || 0));
+        setEquipo(members);
+      } catch (error) {
+        console.error("Error fetching equipo members:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchEquipo();
+  }, []);
 
-async function getEquipoMembers() {
-  try {
-    const snap = await getDocs(collection(firestore, "equipo"));
-    const members = snap.docs.map((doc) => ({
-      id: doc.id,
-      ...JSON.parse(JSON.stringify(doc.data())),
-    }));
-    return members.sort((a, b) => (a.order || 0) - (b.order || 0));
-  } catch (error) {
-    console.error("Error fetching equipo members:", error);
-    return [];
-  }
-}
-
-export default async function ElMuseoPage() {
-  const equipo = await getEquipoMembers();
+  const toggleMember = (id) => {
+    setExpandedMemberId((prev) => (prev === id ? null : id));
+  };
 
   return (
-    <div className={pageStyles.page} style={{ padding: "1rem 1.5rem 4rem 1.5rem", maxWidth: "1300px", margin: "0 auto" }}>
-      {/* "¿QUÉ ES JUX.?" Statement & Mission Grid */}
-      <QueEsJux />
+    <div className={pageStyles.page}>
+      <main className={styles.pageContainer}>
+        {/* "¿QUÉ ES JUX.?" Statement & Mission 2-Column Grid */}
+        <QueEsJux />
 
-      {/* Equipo Roster Section */}
-      <section style={{ marginTop: "4rem", borderTop: "1px solid #ddd", paddingTop: "4rem" }}>
-        <h2 style={{ fontSize: "2.25rem", fontWeight: "700", marginBottom: "2.5rem", borderBottom: "1px solid #111", paddingBottom: "0.75rem", color: "#111" }}>
-          EQUIPO
-        </h2>
+        {/* Equipo Roster Section */}
+        <section className={styles.equipoSection}>
+          <motion.h2
+            className={styles.sectionTitle}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          >
+            EQUIPO
+          </motion.h2>
 
-        {equipo.length === 0 ? (
-          <p style={{ color: "#777" }}>Información del equipo en actualización.</p>
-        ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "2.5rem" }}>
-            {equipo.map((member) => (
-              <div key={member.id} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                {member.profilePicture ? (
-                  <img
-                    src={member.profilePicture}
-                    alt={member.name}
-                    style={{ width: "100%", height: "auto", objectFit: "contain", borderRadius: "6px" }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "300px",
-                      background: "#e8e8e8",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderRadius: "6px",
-                      color: "#888",
-                      fontSize: "2rem",
-                      fontWeight: "700",
+          {loading ? (
+            <p style={{ color: "#777", fontSize: "1.1rem" }}>Cargando equipo...</p>
+          ) : equipo.length === 0 ? (
+            <p style={{ color: "#777", fontSize: "1.1rem" }}>Información del equipo en actualización.</p>
+          ) : (
+            <motion.div
+              className={styles.equipoList}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+                },
+              }}
+            >
+              {equipo.map((member) => {
+                const isExpanded = expandedMemberId === member.id;
+                const bios = Array.isArray(member.bio) ? member.bio : member.bio ? [member.bio] : [];
+
+                return (
+                  <motion.div
+                    key={member.id}
+                    className={`${styles.memberCard} ${isExpanded ? styles.memberCardActive : ""}`}
+                    onClick={() => toggleMember(member.id)}
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
                     }}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        toggleMember(member.id);
+                      }
+                    }}
+                    aria-expanded={isExpanded}
                   >
-                    {member.name.charAt(0)}
-                  </div>
-                )}
-                <div>
-                  <h3 style={{ fontSize: "1.35rem", fontWeight: "700", margin: 0 }}>{member.name}</h3>
-                  <p style={{ fontSize: "1rem", color: "#666", fontWeight: "600", marginTop: "0.25rem" }}>
-                    {member.role || "Equipo"}
-                  </p>
-                  {Array.isArray(member.bio) && member.bio.length > 0 && (
-                    <div style={{ marginTop: "0.75rem", fontSize: "0.95rem", color: "#444", lineHeight: "1.5" }}>
-                      {member.bio.map((paragraph, idx) => (
-                        <p key={idx} style={{ marginBottom: "0.5rem" }}>
-                          {paragraph}
-                        </p>
-                      ))}
+                    <div className={styles.memberHeader}>
+                      <div className={styles.avatarWrapper}>
+                        {member.profilePicture ? (
+                          <img
+                            src={member.profilePicture}
+                            alt={member.name}
+                            className={styles.avatarImg}
+                          />
+                        ) : (
+                          <span className={styles.avatarFallback}>
+                            {(member.name || "J").charAt(0)}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className={styles.memberInfo}>
+                        <h3 className={styles.memberName}>{member.name}</h3>
+                        <span className={styles.memberRole}>{member.role || "Equipo"}</span>
+                      </div>
+
+                      <div className={styles.toggleIcon} style={{ transform: isExpanded ? "rotate(45deg)" : "rotate(0deg)" }}>
+                        +
+                      </div>
                     </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+
+                    <AnimatePresence>
+                      {isExpanded && bios.length > 0 && (
+                        <motion.div
+                          className={styles.expandedDetails}
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                        >
+                          {bios.map((paragraph, idx) => (
+                            <p key={idx} className={styles.bioParagraph}>
+                              {paragraph}
+                            </p>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          )}
+        </section>
+      </main>
     </div>
   );
 }

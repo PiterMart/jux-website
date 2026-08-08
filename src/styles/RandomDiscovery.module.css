@@ -1,0 +1,189 @@
+.container {
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  padding: clamp(16rem, 30vh, 28rem) 2rem clamp(10rem, 18vh, 18rem) 2rem;
+  background-color: var(--background, #D3D5CE);
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  z-index: 10;
+}
+
+.innerContent {
+  width: 100%;
+  max-width: 1400px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0 1.5rem;
+  box-sizing: border-box;
+}
+
+.discoveryWrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.itemRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-decoration: none;
+  color: var(--foreground, #111111);
+  cursor: pointer;
+  transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 100%;
+  gap: 0;
+}
+
+.textColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  gap: 0;
+}
+
+.itemTitle {
+  font-family: var(--font-family-base), "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(2.5rem, 5.5vw, 5rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+  margin: 0;
+  color: inherit;
+  transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 100%;
+  will-change: transform, opacity, filter;
+}
+
+.itemHashtags {
+  font-family: var(--font-family-base), "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(0.95rem, 1.8vw, 1.35rem);
+  font-weight: 400;
+  line-height: 1.2;
+  margin-top: 0.4rem;
+  margin-left: 0.15rem;
+  color: inherit;
+  transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: -0.01em;
+  width: 100%;
+  will-change: transform, opacity;
+}
+
+/* Star of David positioned right underneath with negative top margin and global blue color */
+.starWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  align-self: flex-end;
+  margin-top: clamp(-2.2rem, -3.5vw, -3.8rem);
+  z-index: 2;
+  will-change: transform, opacity;
+}
+
+.starSvg {
+  width: clamp(75px, 8.5vw, 120px);
+  height: auto;
+  color: var(--secondary-main, #1A2BFF);
+  stroke: var(--secondary-main, #1A2BFF);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
+}
+
+.itemRow:hover,
+.itemRow:hover .itemTitle,
+.itemRow:hover .itemHashtags {
+  color: var(--secondary-main, #1A2BFF);
+}
+
+.itemRow:hover .starSvg {
+  transform: rotate(15deg) scale(1.08);
+}
+
+/* Lecturas link to /educacion */
+.moreLinkWrapper {
+  display: flex;
+  align-items: center;
+  margin-top: 0;
+  gap: 0;
+}
+
+.moreLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  font-family: var(--font-family-base), "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--secondary-main, #1A2BFF);
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s ease;
+}
+
+.plusSign {
+  font-size: 1.45em;
+  font-weight: 500;
+  line-height: 0.8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-0.06em);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.moreText {
+  display: inline-block;
+  line-height: 1;
+}
+
+.moreLink:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
+.moreLink:hover .plusSign {
+  transform: translateY(-0.06em) rotate(90deg);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: clamp(9rem, 20vh, 16rem) 1rem clamp(6rem, 12vh, 10rem) 1rem;
+  }
+
+  .innerContent {
+    padding: 0;
+  }
+
+  .discoveryWrapper {
+    gap: 0;
+  }
+
+  .itemTitle {
+    font-size: clamp(2rem, 8.5vw, 3.2rem);
+  }
+
+  .itemHashtags {
+    font-size: 0.9rem;
+    margin-top: 0.3rem;
+  }
+
+  .starWrapper {
+    margin-top: -1.2rem;
+  }
+
+  .starSvg {
+    width: clamp(50px, 12vw, 75px);
+  }
+
+  .moreLink {
+    font-size: 1.05rem;
+  }
+}

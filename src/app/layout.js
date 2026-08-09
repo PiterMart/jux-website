@@ -6,11 +6,11 @@ import { LanguageProvider } from "../context/LanguageContext";
 
 export const metadata = {
   title: {
-    template: "%s | Galería de Arte",
-    default: "Galería de Arte | El Museo, Exhibiciones, Educación y 360",
+    template: "%s | JUX",
+    default: "JUX | El Museo, Exhibiciones, Educación y 360",
   },
-  description: "Espacio de arte contemporáneo, exhibiciones, educación y recorridos 360°.",
-  keywords: ["galería de arte", "exhibiciones", "arte contemporáneo", "obras de arte", "artistas", "360"],
+  description: "Museo de arte contemporáneo, exhibiciones, educación y recorridos 360°.",
+  keywords: ["MUSEO", "exhibiciones", "arte contemporáneo", "obras de arte", "artistas", "360"],
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },

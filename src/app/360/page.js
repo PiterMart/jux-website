@@ -5,7 +5,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { getDocs, collection } from "firebase/firestore";
 import { firestore } from "../firebase/firebaseConfig";
-import pageStyles from "../../styles/page.module.css";
 import styles from "../../styles/page360.module.css";
 
 export default function Page360() {
@@ -33,10 +32,10 @@ export default function Page360() {
   }, []);
 
   return (
-    <div className={pageStyles.page}>
+    <div style={{ width: "100%", padding: 0, margin: 0, overflowX: "hidden", backgroundColor: "var(--background, #D3D5CE)" }}>
       <main className={styles.container}>
         {loading ? (
-          <p style={{ textAlign: "center", padding: "4rem 0", color: "#888", fontSize: "1.1rem" }}>
+          <p style={{ textAlign: "center", padding: "6rem 0", color: "#888", fontSize: "1.1rem" }}>
             Cargando recorridos 360°...
           </p>
         ) : exhibitions.length === 0 ? (
@@ -71,7 +70,7 @@ export default function Page360() {
             }}
           >
             {exhibitions.map((ex) => {
-              const tourUrl = ex.tour360Url || `/exhibiciones/${ex.id}`;
+              const tourUrl = ex.tour360Url || `/exhibiciones`;
               return (
                 <motion.a
                   key={ex.id}
@@ -80,8 +79,8 @@ export default function Page360() {
                   rel="noopener noreferrer"
                   className={styles.tourCard}
                   variants={{
-                    hidden: { opacity: 0, scale: 0.96 },
-                    visible: { opacity: 1, scale: 1, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } },
+                    hidden: { opacity: 0, y: 30 },
+                    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } },
                   }}
                 >
                   {ex.coverImage && (

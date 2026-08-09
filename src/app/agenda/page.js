@@ -2,15 +2,35 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { collection, getDocs } from "firebase/firestore";
 import { firestore } from "../firebase/firebaseConfig";
 import { calculateExhibitionStatus, formatDateDisplay } from "../firebase/dateUtils";
-import styles from "../../styles/page.module.css";
+import pageStyles from "../../styles/page.module.css";
+import styles from "../../styles/agenda.module.css";
+
+function getBigDateDisplay(startDateStr) {
+  if (!startDateStr) return { day: "—", month: "" };
+  const date = new Date(startDateStr);
+  if (isNaN(date.getTime())) {
+    const parts = startDateStr.split("-");
+    if (parts.length >= 3) {
+      const months = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
+      const monthIdx = parseInt(parts[1], 10) - 1;
+      return { day: parts[2], month: months[monthIdx] || "" };
+    }
+    return { day: startDateStr, month: "" };
+  }
+  const day = date.getDate().toString().padStart(2, "0");
+  const months = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
+  const month = months[date.getMonth()];
+  return { day, month };
+}
 
 export default function AgendaPage() {
   const [exhibitions, setExhibitions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState(null);
 
   useEffect(() => {
     async function fetchAgenda() {
@@ -59,23 +79,31 @@ export default function AgendaPage() {
     fetchAgenda();
   }, []);
 
+  const toggleExpand = (id) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  };
+
+  const getStatusBadge = (status) => {
+    if (status === "actual") {
+      return <span className={`${styles.statusBadge} ${styles.badgeActual}`}>En Curso</span>;
+    }
+    if (status === "proxima") {
+      return <span className={`${styles.statusBadge} ${styles.badgeProxima}`}>Próximamente</span>;
+    }
+    return null;
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main} style={{ paddingTop: "8rem", maxWidth: "1200px" }}>
+    <div className={pageStyles.page}>
+      <main className={styles.pageContainer}>
+        {/* AGENDA SECTION HEADER */}
         <motion.h1
-          style={{
-            fontFamily: "var(--font-family-base)",
-            fontSize: "clamp(2.5rem, 5vw, 4rem)",
-            fontWeight: "800",
-            marginBottom: "3rem",
-            textTransform: "uppercase",
-            letterSpacing: "0.04em",
-          }}
+          className={styles.sectionTitle}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
-          Agenda de Actividades
+          AGENDA DE ACTIVIDADES
         </motion.h1>
 
         {loading ? (
@@ -83,134 +111,138 @@ export default function AgendaPage() {
             Cargando agenda...
           </p>
         ) : exhibitions.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "4rem 0", color: "#666" }}>
-            <p style={{ fontSize: "1.1rem" }}>No hay actividades programadas en este momento.</p>
-          </div>
+          <p style={{ textAlign: "center", padding: "4rem 0", color: "#888", fontSize: "1.1rem" }}>
+            No hay actividades programadas en este momento.
+          </p>
         ) : (
           <motion.div
-            style={{ display: "flex", flexDirection: "column", gap: "2.5rem" }}
+            className={styles.agendaList}
             initial="hidden"
             animate="visible"
             variants={{
               hidden: { opacity: 0 },
-              visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+              visible: {
+                opacity: 1,
+                transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+              },
             }}
           >
-            {exhibitions.map((item) => (
-              <motion.div
-                key={item.id}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                  gap: "2rem",
-                  backgroundColor: "rgba(255, 255, 255, 0.6)",
-                  padding: "2rem",
-                  borderRadius: "6px",
-                  border: "1px solid rgba(17, 17, 17, 0.12)",
-                  alignItems: "center",
-                }}
-                variants={{
-                  hidden: { opacity: 0, y: 24 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
-                }}
-              >
-                {item.coverImage && (
+            {exhibitions.map((item) => {
+              const isExpanded = expandedId === item.id;
+              const dateInfo = getBigDateDisplay(item.startDate);
+              const fullDateRange =
+                item.startDate || item.endDate
+                  ? `${formatDateDisplay(item.startDate)} ${item.endDate ? `— ${formatDateDisplay(item.endDate)}` : ""}`
+                  : null;
+
+              return (
+                <motion.div
+                  key={item.id}
+                  className={`${styles.agendaCard} ${isExpanded ? styles.agendaCardActive : ""}`}
+                  variants={{
+                    hidden: { opacity: 0, y: 20 },
+                    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
+                  }}
+                >
                   <div
-                    style={{
-                      width: "100%",
-                      height: "220px",
-                      overflow: "hidden",
-                      borderRadius: "4px",
-                      backgroundColor: "#e0e0e0",
+                    className={styles.cardHeader}
+                    onClick={() => toggleExpand(item.id)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        toggleExpand(item.id);
+                      }
                     }}
+                    aria-expanded={isExpanded}
                   >
-                    <img
-                      src={item.coverImage}
-                      alt={item.title}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
-                  </div>
-                )}
+                    {/* Big Date Number Display */}
+                    <div className={styles.bigDateBlock}>
+                      <span className={styles.bigDateNumber}>{dateInfo.day}</span>
+                      {dateInfo.month && <span className={styles.bigDateMonth}>{dateInfo.month}</span>}
+                    </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      padding: "0.3rem 0.75rem",
-                      fontSize: "0.75rem",
-                      fontWeight: "700",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.1em",
-                      borderRadius: "3px",
-                      width: "fit-content",
-                      backgroundColor:
-                        item.status === "actual"
-                          ? "var(--secondary-main, #1A2BFF)"
-                          : item.status === "proxima"
-                          ? "#111111"
-                          : "#666666",
-                      color: "#ffffff",
-                    }}
-                  >
-                    {item.status === "actual"
-                      ? "En Curso"
-                      : item.status === "proxima"
-                      ? "Próximamente"
-                      : "Muestra Pasada"}
-                  </span>
+                    {item.coverImage && (
+                      <div className={styles.coverWrapper}>
+                        <img src={item.coverImage} alt={item.title} className={styles.coverImg} />
+                      </div>
+                    )}
 
-                  <h2
-                    style={{
-                      fontSize: "1.75rem",
-                      fontWeight: "700",
-                      fontFamily: "var(--font-family-base)",
-                      margin: 0,
-                    }}
-                  >
-                    {item.title}
-                  </h2>
-                  {item.subtitle && (
-                    <p style={{ fontSize: "1.05rem", color: "#555", fontStyle: "italic", margin: 0 }}>
-                      {item.subtitle}
-                    </p>
-                  )}
+                    <div className={styles.cardMainInfo}>
+                      <div className={styles.statusRow}>
+                        {getStatusBadge(item.status)}
+                      </div>
 
-                  {(item.startDate || item.endDate) && (
-                    <p style={{ fontSize: "0.95rem", color: "#333", margin: "0.25rem 0" }}>
-                      <strong>Fechas:</strong> {formatDateDisplay(item.startDate)}{" "}
-                      {item.endDate ? `— ${formatDateDisplay(item.endDate)}` : ""}
-                    </p>
-                  )}
+                      <h2 className={styles.itemTitle}>{item.title}</h2>
+                      {item.subtitle && <p className={styles.itemSubtitle}>{item.subtitle}</p>}
+                    </div>
 
-                  {item.location && (
-                    <p style={{ fontSize: "0.95rem", color: "#333", margin: "0.25rem 0" }}>
-                      <strong>Ubicación:</strong> {item.location}
-                    </p>
-                  )}
-
-                  <div style={{ marginTop: "0.75rem" }}>
-                    <Link
-                      href={`/exhibiciones/${item.id}`}
-                      style={{
-                        display: "inline-block",
-                        padding: "0.6rem 1.4rem",
-                        backgroundColor: "#111111",
-                        color: "#ffffff",
-                        textDecoration: "none",
-                        fontSize: "0.85rem",
-                        fontWeight: "700",
-                        letterSpacing: "0.08em",
-                        textTransform: "uppercase",
-                        borderRadius: "3px",
-                        transition: "background-color 0.25s ease",
-                      }}
+                    <div
+                      className={styles.toggleIcon}
+                      style={{ transform: isExpanded ? "rotate(45deg)" : "rotate(0deg)" }}
                     >
-                      Ver Detalle →
-                    </Link>
+                      +
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        className={styles.expandedContainer}
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                      >
+                        <div className={styles.detailGrid}>
+                          {fullDateRange && (
+                            <div className={styles.detailItem}>
+                              <strong>Fechas:</strong> {fullDateRange}
+                            </div>
+                          )}
+
+                          {item.location && (
+                            <div className={styles.detailItem}>
+                              <strong>Lugar:</strong> {item.location}
+                            </div>
+                          )}
+
+                          {item.curator && (
+                            <div className={styles.detailItem}>
+                              <strong>Curaduría:</strong> {item.curator}
+                            </div>
+                          )}
+                        </div>
+
+                        {item.description && (
+                          <div className={styles.descriptionBox}>
+                            <p style={{ margin: 0 }}>{item.description}</p>
+                          </div>
+                        )}
+
+                        <div className={styles.actionRow}>
+                          <Link href="/exhibiciones" className={styles.blueBtn}>
+                            Ver en Exhibiciones →
+                          </Link>
+
+                          {item.tour360Url && (
+                            <a
+                              href={item.tour360Url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={styles.outlineBtn}
+                            >
+                              Recorrido 360° ↗
+                            </a>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
           </motion.div>
         )}
       </main>

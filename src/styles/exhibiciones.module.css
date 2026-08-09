@@ -1,27 +1,35 @@
 .pageContainer {
-  padding: 7rem 1.5rem 6rem 1.5rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding: 3rem 0 6rem 0;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
   box-sizing: border-box;
 }
 
-/* Big Hero Featured Current Exhibition */
-.heroSection {
-  margin-bottom: 6rem;
+.exhibitionList {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
   width: 100%;
 }
 
-.heroImageContainer {
+.exhibitionCard {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.imageWrapper {
   position: relative;
   width: 100%;
-  height: clamp(480px, 70vh, 750px);
-  border-radius: 4px;
+  height: clamp(450px, 65vh, 750px);
   overflow: hidden;
-  background-color: #222222;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
+  background-color: #111111;
+  cursor: pointer;
 }
 
-.heroImage {
+.image {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -29,193 +37,524 @@
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.heroImageContainer:hover .heroImage {
+.imageWrapper:hover .image {
   transform: scale(1.02);
 }
 
-/* Blue Box Overlay on Bottom-Left Corner */
-.blueInfoBox {
+/* Nav buttons for carousel */
+.navButton {
   position: absolute;
-  bottom: 2.5rem;
-  left: 2.5rem;
-  max-width: min(560px, calc(100% - 5rem));
-  background-color: var(--secondary-main, #1A2BFF);
-  color: #ffffff;
-  padding: 2rem 2.5rem;
-  border-radius: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1.5px solid #222222;
+  color: #111111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   z-index: 10;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  padding: 0;
+  outline: none;
+}
+
+.navButton:hover {
+  background: #ffffff;
+  transform: translateY(-50%) scale(1.08);
+}
+
+.prevButton {
+  left: 2rem;
+}
+
+.nextButton {
+  right: 2rem;
+}
+
+.arrowIcon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* Blue Banner Bar */
+.blueBanner {
+  width: 100%;
+  background-color: #1A2BFF;
+  color: var(--background, #D3D5CE);
+  padding: 2.25rem 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  gap: 1.5rem;
+  cursor: pointer;
+}
+
+.bannerContent {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  box-sizing: border-box;
+  gap: 0.45rem;
 }
 
-.heroTag {
-  font-family: var(--font-family-base), "Josefin Sans", sans-serif;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.heroTitle {
-  font-family: var(--font-family-base), "Josefin Sans", sans-serif;
-  font-size: clamp(2rem, 3.5vw, 3.2rem);
-  font-weight: 800;
-  line-height: 1.05;
-  margin: 0;
-  color: #ffffff;
-  letter-spacing: -0.02em;
-}
-
-.heroSubtitle {
-  font-size: 1.15rem;
-  color: rgba(255, 255, 255, 0.9);
-  font-style: italic;
-  margin: 0;
-}
-
-.heroDates {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
-  margin-top: 0.25rem;
-}
-
-.heroCurator {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.heroCtaLink {
-  display: inline-flex;
+.headerRow {
+  display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.title {
   font-family: var(--font-family-base), "Josefin Sans", sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  color: #ffffff;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  text-decoration: none;
-  width: fit-content;
-  border-bottom: 2px solid #ffffff;
-  padding-bottom: 2px;
-  transition: opacity 0.25s ease, transform 0.25s ease;
-}
-
-.heroCtaLink:hover {
-  opacity: 0.8;
-  transform: translateX(4px);
-  color: #ffffff;
-}
-
-/* Sections for Upcoming & Archive */
-.sectionBlock {
-  margin-bottom: 6rem;
-}
-
-.sectionHeader {
-  font-family: var(--font-family-base), "Josefin Sans", sans-serif;
-  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  font-size: clamp(1.4rem, 2.5vw, 2.2rem);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--foreground, #111111);
-  margin-bottom: 2.5rem;
-  border-bottom: 1px solid #111111;
-  padding-bottom: 0.75rem;
+  color: var(--background, #D3D5CE);
+  margin: 0;
 }
 
-.archiveGrid {
+.separator {
+  font-size: 1.4rem;
+  opacity: 0.7;
+}
+
+.location {
+  font-size: clamp(1.2rem, 2vw, 1.8rem);
+  font-weight: 700;
+  color: var(--background, #D3D5CE);
+}
+
+.dates {
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
+  font-style: italic;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.expandToggleBtn {
+  font-family: var(--font-family-base), "Josefin Sans", sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--background, #D3D5CE);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+/* Expanded Information Container over Blue Background */
+.expandedContainer {
+  width: 100%;
+  background-color: #1A2BFF;
+  color: var(--background, #D3D5CE);
+  padding: 1rem 2.5rem 4rem 2.5rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 3.5rem;
+  border-top: 1px solid rgba(211, 213, 206, 0.25);
+}
+
+.expandedHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2rem;
+  padding-top: 1rem;
+}
+
+.statusTag {
+  background-color: var(--background, #D3D5CE);
+  color: #1A2BFF;
+  padding: 0.45rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-radius: 2px;
+}
+
+.curatorText {
+  font-size: 1.1rem;
+  opacity: 0.95;
+}
+
+.tour360Btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.75rem;
+  background-color: var(--background, #D3D5CE);
+  color: #1A2BFF;
+  font-weight: 800;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  border-radius: 2px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.tour360Btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.invertedDescriptionSection {
+  background-color: var(--background, #D3D5CE);
+  color: #111111;
+  padding: 2.75rem 2.5rem;
+  width: calc(100% + 5rem);
+  margin-left: -2.5rem;
+  margin-right: -2.5rem;
+  box-sizing: border-box;
+}
+
+.invertedSectionTitle {
+  font-family: var(--font-family-base), "Josefin Sans", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #111111;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #111111;
+  padding-bottom: 0.5rem;
+}
+
+.invertedDescriptionBody {
+  font-size: 1.2rem;
+  line-height: 1.85;
+  color: #111111;
+  max-width: 1000px;
+}
+
+.expandedSectionTitle {
+  font-family: var(--font-family-base), "Josefin Sans", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--background, #D3D5CE);
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(211, 213, 206, 0.3);
+  padding-bottom: 0.5rem;
+}
+
+.descriptionBody {
+  font-size: 1.2rem;
+  line-height: 1.85;
+  color: var(--background, #D3D5CE);
+  max-width: 1000px;
+}
+
+.descriptionParagraph {
+  margin-bottom: 1.25rem;
+}
+
+.artistsFlex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.artistTag {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(211, 213, 206, 0.4);
+  color: var(--background, #D3D5CE);
+  padding: 0.6rem 1.25rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 2px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.artistTag:hover {
+  background: var(--background, #D3D5CE);
+  color: #1A2BFF;
+}
+
+.artworksGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 3rem 2.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2.5rem;
 }
 
-.archiveCard {
+.artworkCard {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(211, 213, 206, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--background, #D3D5CE);
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.artworkCard:hover {
+  transform: translateY(-4px);
+  border-color: var(--background, #D3D5CE);
+}
+
+.artworkImg {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  display: block;
+}
+
+.artworkMeta {
+  padding: 1.25rem;
+}
+
+.artworkTitle {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.artworkArtist {
+  font-size: 0.95rem;
+  opacity: 0.85;
+  margin-top: 0.35rem;
+}
+
+/* Full-Width Gallery Carousel Container inside Blue Card */
+.fullWidthGallerySection {
+  width: calc(100% + 5rem);
+  margin-left: -2.5rem;
+  margin-right: -2.5rem;
+  margin-top: 1rem;
+}
+
+.galleryCarouselWrapper {
+  position: relative;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.archiveCard:hover {
-  transform: translateY(-4px);
-}
-
-.archiveImageWrapper {
+.galleryCarouselMain {
+  position: relative;
   width: 100%;
-  height: 240px;
-  border-radius: 4px;
+  height: clamp(400px, 68vh, 750px);
   overflow: hidden;
-  background-color: #e5e5e5;
+  background-color: rgba(0, 0, 0, 0.3);
+  cursor: zoom-in;
 }
 
-.archiveImage {
+.galleryCarouselImg {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
 }
 
-.archiveCard:hover .archiveImage {
-  transform: scale(1.04);
+.galleryDots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
 }
 
-.archiveTitle {
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgba(211, 213, 206, 0.35);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.activeDot {
+  background-color: var(--background, #D3D5CE);
+  transform: scale(1.3);
+}
+
+.closeExpandedBtn {
+  align-self: center;
+  margin-top: 2rem;
+  background: transparent;
+  border: 2px solid var(--background, #D3D5CE);
+  color: var(--background, #D3D5CE);
+  padding: 0.85rem 2.5rem;
   font-family: var(--font-family-base), "Josefin Sans", sans-serif;
-  font-size: 1.45rem;
-  font-weight: 700;
-  margin: 0;
-  line-height: 1.2;
-  transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-.archiveCard:hover .archiveTitle {
-  color: var(--secondary-main, #1A2BFF);
+.closeExpandedBtn:hover {
+  background-color: var(--background, #D3D5CE);
+  color: #1A2BFF;
 }
 
-.archiveDates {
-  font-size: 0.9rem;
-  color: #666666;
-  margin-top: 0.35rem;
-  font-weight: 500;
+/* Lightbox Modal Overlay */
+.lightboxOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.94);
+  backdrop-filter: blur(8px);
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 2rem;
+}
+
+.lightboxCloseBtn {
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 2.5rem;
+  font-weight: 300;
+  cursor: pointer;
+  z-index: 100000;
+  line-height: 1;
+  padding: 0.5rem;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.lightboxCloseBtn:hover {
+  transform: scale(1.15);
+  opacity: 0.8;
+}
+
+.lightboxMain {
+  position: relative;
+  max-width: 92vw;
+  max-height: 85vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightboxImage {
+  max-width: 90vw;
+  max-height: 82vh;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+.lightboxCounter {
+  position: absolute;
+  bottom: 2rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: var(--font-family-base), "Josefin Sans", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+
+.lightboxNavBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100001;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.lightboxNavBtn:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.lightboxPrevBtn {
+  left: 2rem;
+}
+
+.lightboxNextBtn {
+  right: 2rem;
 }
 
 @media (max-width: 768px) {
   .pageContainer {
-    padding: 5.5rem 1rem 4rem 1rem;
+    padding: 4rem 0 4rem 0;
   }
 
-  .heroImageContainer {
-    height: 440px;
+  .imageWrapper {
+    height: 380px;
   }
 
-  .blueInfoBox {
-    bottom: 1.25rem;
-    left: 1.25rem;
-    right: 1.25rem;
-    max-width: none;
-    padding: 1.25rem 1.5rem;
+  .blueBanner {
+    padding: 1.5rem 1.25rem;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .heroTitle {
-    font-size: 1.85rem;
+  .expandedContainer {
+    padding: 0 1.25rem 3rem 1.25rem;
+    gap: 2.5rem;
   }
 
-  .heroSubtitle {
-    font-size: 1rem;
+  .invertedDescriptionSection {
+    width: calc(100% + 2.5rem);
+    margin-left: -1.25rem;
+    margin-right: -1.25rem;
+    padding: 2rem 1.25rem;
   }
 
-  .archiveGrid {
+  .fullWidthGallerySection {
+    width: calc(100% + 2.5rem);
+    margin-left: -1.25rem;
+    margin-right: -1.25rem;
+  }
+
+  .prevButton {
+    left: 0.75rem;
+  }
+
+  .nextButton {
+    right: 0.75rem;
+  }
+
+  .artworksGrid {
     grid-template-columns: 1fr;
-    gap: 2rem;
+  }
+
+  .galleryCarouselMain {
+    height: 320px;
+  }
+
+  .lightboxPrevBtn {
+    left: 0.5rem;
+  }
+
+  .lightboxNextBtn {
+    right: 0.5rem;
   }
 }

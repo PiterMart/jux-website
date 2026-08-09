@@ -3,15 +3,357 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { getDocs, collection } from "firebase/firestore";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { firestore } from "../firebase/firebaseConfig";
 import { calculateExhibitionStatus, formatDateDisplay } from "../firebase/dateUtils";
-import pageStyles from "../../styles/page.module.css";
 import styles from "../../styles/exhibiciones.module.css";
+
+function Lightbox({ images, initialIndex, onClose }) {
+  const [index, setIndex] = useState(initialIndex || 0);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") handlePrev();
+      if (e.key === "ArrowRight") handleNext();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [images, index]);
+
+  if (!images || images.length === 0) return null;
+
+  const currentImg = typeof images[index] === "string" ? images[index] : images[index]?.url;
+  const hasMultiple = images.length > 1;
+
+  const handlePrev = (e) => {
+    if (e) e.stopPropagation();
+    setIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNext = (e) => {
+    if (e) e.stopPropagation();
+    setIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  return (
+    <motion.div
+      className={styles.lightboxOverlay}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <button className={styles.lightboxCloseBtn} onClick={onClose} aria-label="Cerrar visión ampliada">
+        ✕
+      </button>
+
+      <div className={styles.lightboxMain} onClick={(e) => e.stopPropagation()}>
+        <img
+          src={currentImg}
+          alt={`Vista ampliada ${index + 1}`}
+          className={styles.lightboxImage}
+        />
+
+        {hasMultiple && (
+          <>
+            <button
+              onClick={handlePrev}
+              className={`${styles.lightboxNavBtn} ${styles.lightboxPrevBtn}`}
+              aria-label="Imagen anterior"
+            >
+              <svg className={styles.arrowIcon} viewBox="0 0 24 24">
+                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+              </svg>
+            </button>
+            <button
+              onClick={handleNext}
+              className={`${styles.lightboxNavBtn} ${styles.lightboxNextBtn}`}
+              aria-label="Imagen siguiente"
+            >
+              <svg className={styles.arrowIcon} viewBox="0 0 24 24">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+              </svg>
+            </button>
+          </>
+        )}
+      </div>
+
+      <div className={styles.lightboxCounter}>
+        {index + 1} / {images.length}
+      </div>
+    </motion.div>
+  );
+}
+
+function GalleryCarousel({ images, onOpenLightbox }) {
+  const [index, setIndex] = useState(0);
+  if (!images || images.length === 0) return null;
+
+  const currentImg = typeof images[index] === "string" ? images[index] : images[index]?.url;
+  const hasMultiple = images.length > 1;
+
+  const handlePrev = (e) => {
+    e.stopPropagation();
+    setIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNext = (e) => {
+    e.stopPropagation();
+    setIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  return (
+    <div className={styles.galleryCarouselWrapper}>
+      <div
+        className={styles.galleryCarouselMain}
+        onClick={() => onOpenLightbox(index)}
+        title="Hacer clic para ampliar imagen"
+      >
+        <img
+          src={currentImg}
+          alt={`Registro ${index + 1}`}
+          className={styles.galleryCarouselImg}
+        />
+        {hasMultiple && (
+          <>
+            <button
+              onClick={handlePrev}
+              className={`${styles.navButton} ${styles.prevButton}`}
+              aria-label="Imagen anterior"
+            >
+              <svg className={styles.arrowIcon} viewBox="0 0 24 24">
+                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+              </svg>
+            </button>
+            <button
+              onClick={handleNext}
+              className={`${styles.navButton} ${styles.nextButton}`}
+              aria-label="Imagen siguiente"
+            >
+              <svg className={styles.arrowIcon} viewBox="0 0 24 24">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+              </svg>
+            </button>
+          </>
+        )}
+      </div>
+
+      {hasMultiple && (
+        <div className={styles.galleryDots}>
+          {images.map((_, i) => (
+            <button
+              key={i}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIndex(i);
+              }}
+              className={`${styles.dot} ${i === index ? styles.activeDot : ""}`}
+              aria-label={`Ver foto ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ExhibitionCard({ exhibition, isExpanded, onToggleExpand, onOpenLightbox }) {
+  // Static main cover image for the top card
+  const coverImage =
+    exhibition.coverImage ||
+    (Array.isArray(exhibition.images) && exhibition.images.length > 0
+      ? exhibition.images[0]
+      : "/animacion/MUSEOJUXXXXOK1.png");
+
+  // Collect all gallery / registro images for the carousel at the bottom of expanded card
+  const galleryImages = [];
+  if (Array.isArray(exhibition.gallery) && exhibition.gallery.length > 0) {
+    galleryImages.push(...exhibition.gallery);
+  } else if (Array.isArray(exhibition.images) && exhibition.images.length > 0) {
+    galleryImages.push(...exhibition.images);
+  }
+
+  const dateText =
+    exhibition.dateDisplay ||
+    (exhibition.startDate && exhibition.endDate
+      ? `${formatDateDisplay(exhibition.startDate)} — ${formatDateDisplay(exhibition.endDate)}`
+      : exhibition.startDate
+        ? formatDateDisplay(exhibition.startDate)
+        : "");
+
+  return (
+    <div className={styles.exhibitionCard}>
+      {/* Static Full-Width First Image (No Carousel Arrows) */}
+      <motion.div
+        className={styles.imageWrapper}
+        onClick={onToggleExpand}
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: false, amount: 0.1 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <img
+          src={coverImage}
+          alt={exhibition.title}
+          className={styles.image}
+        />
+      </motion.div>
+
+      {/* Blue Banner Bar */}
+      <motion.div
+        className={styles.blueBanner}
+        onClick={onToggleExpand}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: false, amount: 0.1 }}
+        variants={{
+          hidden: {},
+          visible: { transition: { staggerChildren: 0.2 } },
+        }}
+      >
+        <div className={styles.bannerContent}>
+          <div className={styles.headerRow}>
+            <h2 className={styles.title}>{exhibition.title}</h2>
+            {exhibition.location && (
+              <>
+                <span className={styles.separator}>-</span>
+                <span className={styles.location}>{exhibition.location}</span>
+              </>
+            )}
+          </div>
+          {dateText && <p className={styles.dates}>{dateText}</p>}
+        </div>
+
+        <button className={styles.expandToggleBtn} aria-label="Expandir información">
+          {isExpanded ? "−" : "+"}
+        </button>
+      </motion.div>
+
+      {/* In-Place Expanded Detail Section over Blue Background */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            className={styles.expandedContainer}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {/* Header tags & 360 tour */}
+            <div className={styles.expandedHeader}>
+              <span className={styles.statusTag}>
+                {exhibition.status === "actual"
+                  ? "En curso"
+                  : exhibition.status === "proxima"
+                    ? "Futuro"
+                    : "Pasado"}
+              </span>
+
+              {exhibition.curator && (
+                <span className={styles.curatorText}>
+                  Curaduría: <strong>{exhibition.curator}</strong>
+                </span>
+              )}
+
+              {exhibition.tour360Url && (
+                <a
+                  href={exhibition.tour360Url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.tour360Btn}
+                >
+                  Recorrido Virtual 360° →
+                </a>
+              )}
+            </div>
+
+            {/* Description (Inverted Colors: Clear background and black text) */}
+            {Array.isArray(exhibition.description) && exhibition.description.length > 0 && (
+              <div className={styles.invertedDescriptionSection}>
+                <div className={styles.invertedDescriptionBody}>
+                  {exhibition.description.map((paragraph, idx) => (
+                    <p key={idx} className={styles.descriptionParagraph}>
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Artists */}
+            {Array.isArray(exhibition.artists) && exhibition.artists.length > 0 && (
+              <div>
+                <h3 className={styles.expandedSectionTitle}>Artistas Participantes</h3>
+                <div className={styles.artistsFlex}>
+                  {exhibition.artists.map((art) => (
+                    <Link
+                      key={art.id || art.name}
+                      href={art.id ? `/artistas?id=${art.id}` : "/artistas"}
+                      className={styles.artistTag}
+                    >
+                      {art.name} →
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Artworks */}
+            {Array.isArray(exhibition.artworks) && exhibition.artworks.length > 0 && (
+              <div>
+                <h3 className={styles.expandedSectionTitle}>Obras en Exhibición</h3>
+                <div className={styles.artworksGrid}>
+                  {exhibition.artworks.map((item, idx) => (
+                    <div
+                      key={item.id || idx}
+                      className={styles.artworkCard}
+                      onClick={() => item.image && onOpenLightbox([item.image], 0)}
+                      style={{ cursor: item.image ? "zoom-in" : "default" }}
+                    >
+                      {item.image && (
+                        <img src={item.image} alt={item.title} className={styles.artworkImg} />
+                      )}
+                      <div className={styles.artworkMeta}>
+                        <h4 className={styles.artworkTitle}>{item.title}</h4>
+                        {item.artistName && (
+                          <p className={styles.artworkArtist}>{item.artistName}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Installation / Gallery Carousel at the end of the information card (Full Page Width) */}
+            {galleryImages.length > 0 && (
+              <div>
+                <h3 className={styles.expandedSectionTitle}>Vista de Sala / Registro</h3>
+                <div className={styles.fullWidthGallerySection}>
+                  <GalleryCarousel
+                    images={galleryImages}
+                    onOpenLightbox={(idx) => onOpenLightbox(galleryImages, idx)}
+                  />
+                </div>
+              </div>
+            )}
+
+            <button className={styles.closeExpandedBtn} onClick={onToggleExpand}>
+              CERRAR EXHIBICIÓN —
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function ExhibicionesPage() {
   const [exhibitions, setExhibitions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState(null);
+  const [activeLightbox, setActiveLightbox] = useState(null); // { images: [], index: 0 }
 
   useEffect(() => {
     async function fetchExhibitions() {
@@ -49,148 +391,41 @@ export default function ExhibicionesPage() {
     fetchExhibitions();
   }, []);
 
-  const currentExhibitions = exhibitions.filter((ex) => ex.status === "actual");
-  const pastExhibitions = exhibitions.filter((ex) => ex.status === "pasada" || !ex.status);
-  const upcomingExhibitions = exhibitions.filter((ex) => ex.status === "proxima");
+  const handleToggleExpand = (id) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  };
 
-  const featured = currentExhibitions[0];
+  const handleOpenLightbox = (images, index) => {
+    setActiveLightbox({ images, index });
+  };
 
   return (
-    <div className={pageStyles.page}>
+    <div style={{ width: "100%", padding: 0, margin: 0, backgroundColor: "var(--background, #D3D5CE)" }}>
       <main className={styles.pageContainer}>
-        {/* Current Exhibition Hero (Blank if no current exhibition) */}
-        {!loading && featured && (
-          <motion.section
-            className={styles.heroSection}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <div className={styles.heroImageContainer}>
-              {featured.coverImage && (
-                <img
-                  src={featured.coverImage}
-                  alt={featured.title}
-                  className={styles.heroImage}
-                />
-              )}
-
-              {/* Blue Box Overlay to the bottom-left corner */}
-              <div className={styles.blueInfoBox}>
-                <span className={styles.heroTag}>
-                  {featured.location || "Exhibición en Curso"}
-                </span>
-                <h1 className={styles.heroTitle}>{featured.title}</h1>
-                {featured.subtitle && (
-                  <p className={styles.heroSubtitle}>{featured.subtitle}</p>
-                )}
-                {(featured.startDate || featured.endDate) && (
-                  <p className={styles.heroDates}>
-                    {formatDateDisplay(featured.startDate)}{" "}
-                    {featured.endDate ? `— ${formatDateDisplay(featured.endDate)}` : ""}
-                  </p>
-                )}
-                {featured.curator && (
-                  <p className={styles.heroCurator}>Curaduría: {featured.curator}</p>
-                )}
-                <Link href={`/exhibiciones/${featured.id}`} className={styles.heroCtaLink}>
-                  Ver Exhibición →
-                </Link>
-              </div>
-            </div>
-          </motion.section>
-        )}
-
-        {/* Upcoming Exhibitions */}
-        {!loading && upcomingExhibitions.length > 0 && (
-          <section className={styles.sectionBlock}>
-            <motion.h2
-              className={styles.sectionHeader}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            >
-              Próximamente
-            </motion.h2>
-            <div className={styles.archiveGrid}>
-              {upcomingExhibitions.map((ex) => (
-                <Link key={ex.id} href={`/exhibiciones/${ex.id}`} className={styles.archiveCard}>
-                  {ex.coverImage && (
-                    <div className={styles.archiveImageWrapper}>
-                      <img src={ex.coverImage} alt={ex.title} className={styles.archiveImage} />
-                    </div>
-                  )}
-                  <div>
-                    <h3 className={styles.archiveTitle}>{ex.title}</h3>
-                    {(ex.startDate || ex.endDate) && (
-                      <p className={styles.archiveDates}>
-                        {formatDateDisplay(ex.startDate)}{" "}
-                        {ex.endDate ? `— ${formatDateDisplay(ex.endDate)}` : ""}
-                      </p>
-                    )}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Past Exhibitions / Archive */}
-        {!loading && pastExhibitions.length > 0 && (
-          <section className={styles.sectionBlock}>
-            <motion.h2
-              className={styles.sectionHeader}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            >
-              Archivo de Exhibiciones
-            </motion.h2>
-            <motion.div
-              className={styles.archiveGrid}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-50px" }}
-              variants={{
-                hidden: { opacity: 0 },
-                visible: {
-                  opacity: 1,
-                  transition: { staggerChildren: 0.08, delayChildren: 0.05 },
-                },
-              }}
-            >
-              {pastExhibitions.map((ex) => (
-                <motion.div
-                  key={ex.id}
-                  variants={{
-                    hidden: { opacity: 0, y: 20 },
-                    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
-                  }}
-                >
-                  <Link href={`/exhibiciones/${ex.id}`} className={styles.archiveCard}>
-                    {ex.coverImage && (
-                      <div className={styles.archiveImageWrapper}>
-                        <img src={ex.coverImage} alt={ex.title} className={styles.archiveImage} />
-                      </div>
-                    )}
-                    <div>
-                      <h3 className={styles.archiveTitle}>{ex.title}</h3>
-                      {(ex.startDate || ex.endDate) && (
-                        <p className={styles.archiveDates}>
-                          {formatDateDisplay(ex.startDate)}{" "}
-                          {ex.endDate ? `— ${formatDateDisplay(ex.endDate)}` : ""}
-                        </p>
-                      )}
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </motion.div>
-          </section>
+        {!loading && (
+          <div className={styles.exhibitionList}>
+            {exhibitions.map((ex) => (
+              <ExhibitionCard
+                key={ex.id}
+                exhibition={ex}
+                isExpanded={expandedId === ex.id}
+                onToggleExpand={() => handleToggleExpand(ex.id)}
+                onOpenLightbox={handleOpenLightbox}
+              />
+            ))}
+          </div>
         )}
       </main>
+
+      <AnimatePresence>
+        {activeLightbox && (
+          <Lightbox
+            images={activeLightbox.images}
+            initialIndex={activeLightbox.index}
+            onClose={() => setActiveLightbox(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

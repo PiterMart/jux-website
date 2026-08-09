@@ -55,7 +55,7 @@
 }
 
 .juxLogoSvg {
-  width: clamp(160px, 32vw, 360px);
+  width: clamp(200px, 40vw, 450px);
   height: auto;
   color: var(--background, #D3D5CE);
   fill: var(--background, #D3D5CE);
@@ -169,7 +169,7 @@
   }
 
   .juxLogoSvg {
-    width: clamp(140px, 45vw, 220px);
+    width: clamp(175px, 56vw, 275px);
   }
 
   .phraseBox {

@@ -10,6 +10,15 @@
   box-sizing: border-box;
 }
 
+.standaloneContainer {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin: 0 0 3rem 0;
+  background-color: transparent;
+  box-sizing: border-box;
+}
+
 .innerContent {
   width: 100%;
   margin: 0;

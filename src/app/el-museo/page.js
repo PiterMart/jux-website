@@ -51,7 +51,7 @@ export default function ElMuseoPage() {
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
-            EQUIPO
+            ¿QUIENES SON JUX.?
           </motion.h2>
 
           {loading ? (

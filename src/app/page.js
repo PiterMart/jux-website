@@ -7,6 +7,7 @@ import HomepageAnimationOverlay from "../components/HomepageAnimationOverlay";
 import Statement from "../components/Statement";
 import LatestExhibition from "../components/LatestExhibition";
 import RandomDiscovery from "../components/RandomDiscovery";
+import ThreeSixtyRedirect from "../components/ThreeSixtyRedirect";
 
 export const metadata = {
   title: "Inicio",
@@ -114,6 +115,7 @@ export default async function Home() {
       <Statement />
       <LatestExhibition initialExhibition={featuredExhibition} />
       <RandomDiscovery items={educacionItems} />
+      <ThreeSixtyRedirect />
     </div>
   );
 }

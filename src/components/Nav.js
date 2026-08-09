@@ -18,9 +18,9 @@ export default function Nav() {
         "/el-museo": "THE MUSEUM",
         "/exhibiciones": "EXHIBITIONS",
         "/artistas": "ARTISTS",
-        "/obras": "ARTWORKS",
         "/educacion": "EDUCATION",
         "/360": "360°",
+        "#footer": "CONTACT",
         "/contacto": "CONTACT",
         "/agenda": "AGENDA",
       };
@@ -32,6 +32,20 @@ export default function Nav() {
   useEffect(() => {
     setIsMenuOpen(false);
   }, [currentPath]);
+
+  const handleNavClick = (e, path) => {
+    if (path.startsWith("#")) {
+      e.preventDefault();
+      setIsMenuOpen(false);
+      const id = path.replace("#", "");
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      } else {
+        window.location.href = `/${path}`;
+      }
+    }
+  };
 
   return (
     <header className={styles.navbarHeader}>
@@ -57,6 +71,7 @@ export default function Nav() {
                 <li key={page.path}>
                   <Link
                     href={page.path}
+                    onClick={(e) => handleNavClick(e, page.path)}
                     className={`${styles.navLink} ${isActive ? styles.navLinkActive : ''}`}
                   >
                     {getPageName(page)}

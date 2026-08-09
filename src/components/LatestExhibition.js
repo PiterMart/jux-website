@@ -55,13 +55,85 @@ const textVariants = {
   },
 };
 
-export default function LatestExhibition({ initialExhibition = null }) {
-  const [exhibition, setExhibition] = useState(initialExhibition || DEFAULT_EXHIBITION);
+export default function LatestExhibition({
+  initialExhibition = null,
+  standalone = false,
+  isDetailPage = false,
+}) {
+  const [exhibition, setExhibition] = useState(() => {
+    if (initialExhibition) {
+      const imgList = [];
+      if (Array.isArray(initialExhibition.images) && initialExhibition.images.length > 0) {
+        imgList.push(...initialExhibition.images);
+      }
+      if (Array.isArray(initialExhibition.gallery) && initialExhibition.gallery.length > 0) {
+        initialExhibition.gallery.forEach((g) => {
+          const url = typeof g === "string" ? g : g?.url;
+          if (url && !imgList.includes(url)) imgList.push(url);
+        });
+      }
+      if (initialExhibition.coverImage && !imgList.includes(initialExhibition.coverImage)) {
+        imgList.unshift(initialExhibition.coverImage);
+      }
+
+      let dateText = initialExhibition.dateDisplay || "";
+      if (!dateText) {
+        if (initialExhibition.startDate && initialExhibition.endDate) {
+          dateText = `${formatDateDisplay(initialExhibition.startDate)} — ${formatDateDisplay(initialExhibition.endDate)}`;
+        } else if (initialExhibition.startDate) {
+          dateText = formatDateDisplay(initialExhibition.startDate);
+        }
+      }
+
+      return {
+        id: initialExhibition.id || "",
+        title: initialExhibition.title || DEFAULT_EXHIBITION.title,
+        subtitle: initialExhibition.subtitle || "",
+        location: initialExhibition.location || DEFAULT_EXHIBITION.location,
+        curator: initialExhibition.curator || "",
+        dateDisplay: dateText,
+        images: imgList.length > 0 ? imgList : (initialExhibition.coverImage ? [initialExhibition.coverImage] : DEFAULT_EXHIBITION.images),
+      };
+    }
+    return DEFAULT_EXHIBITION;
+  });
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     if (initialExhibition) {
-      setExhibition(initialExhibition);
+      const imgList = [];
+      if (Array.isArray(initialExhibition.images) && initialExhibition.images.length > 0) {
+        imgList.push(...initialExhibition.images);
+      }
+      if (Array.isArray(initialExhibition.gallery) && initialExhibition.gallery.length > 0) {
+        initialExhibition.gallery.forEach((g) => {
+          const url = typeof g === "string" ? g : g?.url;
+          if (url && !imgList.includes(url)) imgList.push(url);
+        });
+      }
+      if (initialExhibition.coverImage && !imgList.includes(initialExhibition.coverImage)) {
+        imgList.unshift(initialExhibition.coverImage);
+      }
+
+      let dateText = initialExhibition.dateDisplay || "";
+      if (!dateText) {
+        if (initialExhibition.startDate && initialExhibition.endDate) {
+          dateText = `${formatDateDisplay(initialExhibition.startDate)} — ${formatDateDisplay(initialExhibition.endDate)}`;
+        } else if (initialExhibition.startDate) {
+          dateText = formatDateDisplay(initialExhibition.startDate);
+        }
+      }
+
+      setExhibition({
+        id: initialExhibition.id || "",
+        title: initialExhibition.title || DEFAULT_EXHIBITION.title,
+        subtitle: initialExhibition.subtitle || "",
+        location: initialExhibition.location || DEFAULT_EXHIBITION.location,
+        curator: initialExhibition.curator || "",
+        dateDisplay: dateText,
+        images: imgList.length > 0 ? imgList : (initialExhibition.coverImage ? [initialExhibition.coverImage] : DEFAULT_EXHIBITION.images),
+      });
       return;
     }
 
@@ -103,16 +175,20 @@ export default function LatestExhibition({ initialExhibition = null }) {
           const selected = current || past[0] || list[0];
 
           if (selected) {
-            // Build images array
             const imgList = [];
             if (Array.isArray(selected.images) && selected.images.length > 0) {
               imgList.push(...selected.images);
+            }
+            if (Array.isArray(selected.gallery) && selected.gallery.length > 0) {
+              selected.gallery.forEach((g) => {
+                const url = typeof g === "string" ? g : g?.url;
+                if (url && !imgList.includes(url)) imgList.push(url);
+              });
             }
             if (selected.coverImage && !imgList.includes(selected.coverImage)) {
               imgList.unshift(selected.coverImage);
             }
 
-            // Build date display string
             let dateText = selected.dateDisplay || "";
             if (!dateText) {
               if (selected.startDate && selected.endDate) {
@@ -127,14 +203,16 @@ export default function LatestExhibition({ initialExhibition = null }) {
             setExhibition({
               id: selected.id || "",
               title: selected.title || DEFAULT_EXHIBITION.title,
+              subtitle: selected.subtitle || "",
               location: selected.location || DEFAULT_EXHIBITION.location,
+              curator: selected.curator || "",
               dateDisplay: dateText,
               images: imgList.length > 0 ? imgList : DEFAULT_EXHIBITION.images,
             });
           }
         }
       } catch (err) {
-        console.error("Error fetching latest exhibition for homepage:", err);
+        console.error("Error fetching latest exhibition:", err);
       }
     }
 
@@ -160,10 +238,18 @@ export default function LatestExhibition({ initialExhibition = null }) {
     ? `/exhibiciones/${exhibition.id}`
     : "/exhibiciones";
 
-  return (
-    <section className={styles.container} aria-label="Exhibición Destacada">
-      <div className={styles.innerContent}>
+  const CardWrapper = isDetailPage
+    ? ({ children }) => <div className={styles.cardLink}>{children}</div>
+    : ({ children }) => (
         <Link href={exhibitionHref} className={styles.cardLink}>
+          {children}
+        </Link>
+      );
+
+  return (
+    <section className={standalone ? styles.standaloneContainer : styles.container} aria-label="Exhibición Destacada">
+      <div className={styles.innerContent}>
+        <CardWrapper>
           <motion.div
             className={styles.imageWrapper}
             initial={{ opacity: 0, y: 80 }}
@@ -228,12 +314,17 @@ export default function LatestExhibition({ initialExhibition = null }) {
                   </>
                 )}
               </div>
+              {exhibition.subtitle && (
+                <p className={styles.subtitle} style={{ fontStyle: "italic", opacity: 0.9 }}>
+                  {exhibition.subtitle}
+                </p>
+              )}
               {exhibition.dateDisplay && (
                 <p className={styles.date}>{exhibition.dateDisplay}</p>
               )}
             </motion.div>
           </motion.div>
-        </Link>
+        </CardWrapper>
       </div>
     </section>
   );

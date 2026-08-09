@@ -114,14 +114,40 @@
 .metadataGrid {
   display: flex;
   flex-wrap: wrap;
-  gap: 2rem;
+  align-items: center;
+  gap: 1.75rem;
   margin-bottom: 2rem;
-  font-size: 1rem;
-  color: #444444;
+  font-size: 1.05rem;
+  color: #333333;
 }
 
-.metadataItem strong {
-  color: var(--foreground, #111111);
+.metadataItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.metadataLink {
+  color: var(--secondary-main, #1A2BFF);
+  text-decoration: none;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+.metadataLink:hover {
+  text-decoration: underline;
+  color: #0010c4;
+}
+
+.metaIcon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  stroke: var(--secondary-main, #1A2BFF);
 }
 
 .bioSection {

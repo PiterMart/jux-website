@@ -2,8 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import styles from "../styles/RandomDiscovery.module.css";
+
+// Dynamic import with SSR disabled for react-pdf
+const PdfModalViewer = dynamic(() => import("./PdfModalViewer"), {
+  ssr: false,
+});
 
 const DEFAULT_EDUCACION_ITEMS = [
   {
@@ -89,6 +95,7 @@ const moreLinkVariants = {
 export default function RandomDiscovery({ items = [] }) {
   const activePool = items && items.length > 0 ? items : DEFAULT_EDUCACION_ITEMS;
   const [selectedItem, setSelectedItem] = useState(activePool[0]);
+  const [activePdf, setActivePdf] = useState(null);
 
   useEffect(() => {
     const randomIndex = Math.floor(Math.random() * activePool.length);
@@ -111,8 +118,6 @@ export default function RandomDiscovery({ items = [] }) {
       .join(" – ");
   };
 
-  const pdfHref = current.pdfUrl || "#";
-
   return (
     <section className={styles.container} aria-label="Texto de Educación Destacado">
       <div className={styles.innerContent}>
@@ -123,12 +128,16 @@ export default function RandomDiscovery({ items = [] }) {
           viewport={{ once: false, amount: 0.25 }}
           variants={containerVariants}
         >
-          {/* Clickable Document Link to PDF */}
-          <a
-            href={pdfHref}
-            target="_blank"
-            rel="noopener noreferrer"
+          {/* Clickable Document Button to open integrated PDF viewer */}
+          <button
+            type="button"
+            onClick={() => {
+              if (current.pdfUrl) {
+                setActivePdf({ url: current.pdfUrl, title: current.title });
+              }
+            }}
             className={styles.itemRow}
+            aria-label={`Abrir documento ${current.title}`}
           >
             <div className={styles.textColumn}>
               <motion.h2
@@ -173,7 +182,7 @@ export default function RandomDiscovery({ items = [] }) {
                 />
               </svg>
             </motion.div>
-          </a>
+          </button>
 
           {/* Lecturas link to /educacion */}
           <motion.div
@@ -187,6 +196,15 @@ export default function RandomDiscovery({ items = [] }) {
           </motion.div>
         </motion.div>
       </div>
+
+      {/* Integrated PDF Modal Viewer */}
+      {activePdf && (
+        <PdfModalViewer
+          file={activePdf.url}
+          title={activePdf.title}
+          onClose={() => setActivePdf(null)}
+        />
+      )}
     </section>
   );
 }

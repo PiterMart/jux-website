@@ -58,6 +58,17 @@
   color: var(--secondary-main, #1A2BFF);
 }
 
+.arrow {
+  display: inline-block;
+  margin-left: 0.45rem;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  font-weight: 300;
+}
+
+.itemRow:hover .arrow {
+  transform: translateX(8px);
+}
+
 .statusMessage {
   text-align: left;
   padding: 4rem 0;

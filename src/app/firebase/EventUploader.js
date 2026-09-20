@@ -3,7 +3,6 @@ import { useEffect, useState, useRef } from "react";
 import { firestore } from "./firebaseConfig";
 import { getDocs, collection, doc, updateDoc, setDoc, getDoc, deleteDoc } from "firebase/firestore";
 import SearchableDropdown from "../../components/SearchableDropdown";
-import { syncExhibitionRelations } from "./relationalSync";
 import { logCreate, logUpdate, logDelete, RESOURCE_TYPES } from "./activityLogger";
 import {
   sanitizeFilename,
@@ -16,10 +15,8 @@ import {
 import { toInputDate, calculateExhibitionStatus, toFirestoreTimestamp } from "./dateUtils";
 import styles from "../../styles/uploader.module.css";
 
-export default function ExhibitionUploader() {
-  const [exhibitions, setExhibitions] = useState([]);
-  const [artistsCatalog, setArtistsCatalog] = useState([]);
-  const [artworksCatalog, setArtworksCatalog] = useState([]);
+export default function EventUploader() {
+  const [events, setEvents] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -34,8 +31,6 @@ export default function ExhibitionUploader() {
     curator: "",
     descriptionText: "",
     tour360Url: "",
-    selectedArtistIds: [],
-    selectedArtworkIds: [],
   });
 
   const [coverFile, setCoverFile] = useState(null);
@@ -58,40 +53,28 @@ export default function ExhibitionUploader() {
   const galleryInputRef = useRef(null);
 
   useEffect(() => {
-    fetchCatalogs();
+    fetchEvents();
   }, []);
 
-  const fetchCatalogs = async () => {
+  const fetchEvents = async () => {
     try {
-      const exSnap = await getDocs(collection(firestore, "exhibitions"));
-      const exList = exSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setExhibitions(exList);
-
-      const artistSnap = await getDocs(collection(firestore, "artists"));
-      setArtistsCatalog(artistSnap.docs.map((d) => ({ id: d.id, name: d.data().name || d.id })));
-
-      const artSnap = await getDocs(collection(firestore, "artworks"));
-      setArtworksCatalog(
-        artSnap.docs.map((d) => ({
-          id: d.id,
-          title: d.data().title || d.id,
-          coverImage: d.data().coverImage || "",
-        }))
-      );
+      const snap = await getDocs(collection(firestore, "events"));
+      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setEvents(list);
     } catch (e) {
-      console.error("Error fetching catalogs:", e);
+      console.error("Error fetching events:", e);
     }
   };
 
-  const handleSelectExhibition = async (id) => {
+  const handleSelectEvent = async (id) => {
     setSelectedId(id);
     if (!id) {
       resetForm();
       return;
     }
-    const exDoc = await getDoc(doc(firestore, "exhibitions", id));
-    if (exDoc.exists()) {
-      const d = exDoc.data();
+    const eventDoc = await getDoc(doc(firestore, "events", id));
+    if (eventDoc.exists()) {
+      const d = eventDoc.data();
       const startStr = toInputDate(d.startDate || d.startTimestamp);
       const endStr = toInputDate(d.endDate || d.endTimestamp);
 
@@ -102,14 +85,10 @@ export default function ExhibitionUploader() {
         endDate: endStr,
         location: d.location || "",
         curator: d.curator || "",
-        descriptionText: Array.isArray(d.description) ? d.description.join("\n\n") : d.description || "",
+        descriptionText: Array.isArray(d.description)
+          ? d.description.join("\n\n")
+          : d.description || "",
         tour360Url: d.tour360Url || "",
-        selectedArtistIds: Array.isArray(d.artistIds)
-          ? d.artistIds
-          : (d.artists || []).map((a) => a.id).filter(Boolean),
-        selectedArtworkIds: Array.isArray(d.artworkIds)
-          ? d.artworkIds
-          : (d.artworks || []).map((a) => a.id).filter(Boolean),
       });
       setCoverPreview(d.coverImage || null);
       setInitialCoverUrl(d.coverImage || null);
@@ -133,8 +112,6 @@ export default function ExhibitionUploader() {
       curator: "",
       descriptionText: "",
       tour360Url: "",
-      selectedArtistIds: [],
-      selectedArtworkIds: [],
     });
     setCoverFile(null);
     setCoverPreview(null);
@@ -149,26 +126,6 @@ export default function ExhibitionUploader() {
     if (galleryInputRef.current) galleryInputRef.current.value = "";
   };
 
-  const toggleArtistSelection = (artistId) => {
-    setFormData((prev) => {
-      const current = prev.selectedArtistIds;
-      const next = current.includes(artistId)
-        ? current.filter((id) => id !== artistId)
-        : [...current, artistId];
-      return { ...prev, selectedArtistIds: next };
-    });
-  };
-
-  const toggleArtworkSelection = (artworkId) => {
-    setFormData((prev) => {
-      const current = prev.selectedArtworkIds;
-      const next = current.includes(artworkId)
-        ? current.filter((id) => id !== artworkId)
-        : [...current, artworkId];
-      return { ...prev, selectedArtworkIds: next };
-    });
-  };
-
   // Drag & Drop for Cover Image
   const handleCoverDrop = (e) => {
     e.preventDefault();
@@ -180,7 +137,7 @@ export default function ExhibitionUploader() {
     }
   };
 
-  // Drag & Drop for PDF Catalog
+  // Drag & Drop for PDF Document
   const handlePdfDrop = (e) => {
     e.preventDefault();
     setIsPdfDragOver(false);
@@ -212,8 +169,8 @@ export default function ExhibitionUploader() {
       try {
         await safeDeleteFile(coverPreview);
         if (selectedId) {
-          await updateDoc(doc(firestore, "exhibitions", selectedId), { coverImage: "" });
-          await logUpdate(RESOURCE_TYPES.EXHIBITION, selectedId, { coverImage: "eliminada" });
+          await updateDoc(doc(firestore, "events", selectedId), { coverImage: "" });
+          await logUpdate(RESOURCE_TYPES.EVENT, selectedId, { coverImage: "eliminada" });
         }
         setSuccess("Imagen de portada eliminada de Storage.");
       } catch (err) {
@@ -233,17 +190,17 @@ export default function ExhibitionUploader() {
     if (!pdfUrl && !pdfFile) return;
 
     if (pdfUrl && !pdfUrl.startsWith("blob:")) {
-      if (!confirm("¿Deseas quitar el catálogo PDF y eliminar el archivo de Firebase Storage?")) return;
+      if (!confirm("¿Deseas quitar el documento PDF y eliminar el archivo de Firebase Storage?")) return;
       try {
         await safeDeleteFile(pdfUrl);
         if (selectedId) {
-          await updateDoc(doc(firestore, "exhibitions", selectedId), { pdfCatalog: "" });
-          await logUpdate(RESOURCE_TYPES.EXHIBITION, selectedId, { pdfCatalog: "eliminado" });
+          await updateDoc(doc(firestore, "events", selectedId), { pdfCatalog: "" });
+          await logUpdate(RESOURCE_TYPES.EVENT, selectedId, { pdfCatalog: "eliminado" });
         }
-        setSuccess("Catálogo PDF eliminado de Storage.");
+        setSuccess("Documento PDF eliminado de Storage.");
       } catch (err) {
         console.error(err);
-        setError("Error al eliminar el archivo PDF de Storage.");
+        setError("Error al eliminar el documento PDF de Storage.");
       }
     }
     setPdfFile(null);
@@ -264,8 +221,8 @@ export default function ExhibitionUploader() {
         const updated = existingGallery.filter((_, i) => i !== index);
         setExistingGallery(updated);
         if (selectedId) {
-          await updateDoc(doc(firestore, "exhibitions", selectedId), { gallery: updated });
-          await logUpdate(RESOURCE_TYPES.EXHIBITION, selectedId, { galleryImageDeleted: imgUrl });
+          await updateDoc(doc(firestore, "events", selectedId), { gallery: updated });
+          await logUpdate(RESOURCE_TYPES.EVENT, selectedId, { galleryImageDeleted: imgUrl });
         }
         setSuccess("Foto eliminada de Storage y de la galería.");
       } catch (err) {
@@ -288,10 +245,10 @@ export default function ExhibitionUploader() {
 
     try {
       if (!formData.title.trim()) {
-        throw new Error("El título de la exhibición es obligatorio.");
+        throw new Error("El título del evento es obligatorio.");
       }
 
-      const id = selectedId || doc(collection(firestore, "exhibitions")).id;
+      const id = selectedId || doc(collection(firestore, "events")).id;
 
       // 1. Cover Image Upload
       let coverImageUrl = coverPreview;
@@ -303,7 +260,7 @@ export default function ExhibitionUploader() {
           useWebWorker: true,
         });
         const safeName = sanitizeFilename(coverFile.name);
-        const primaryPath = `exhibitions/${id}/cover_${Date.now()}_${safeName}`;
+        const primaryPath = `events/${id}/cover_${Date.now()}_${safeName}`;
         const fallbackPath = `events/${id}/images/cover_${Date.now()}_${safeName}`;
         coverImageUrl = await safeUploadFile(primaryPath, compressed, {
           contentType: compressed.type || coverFile.type || "image/jpeg",
@@ -316,12 +273,12 @@ export default function ExhibitionUploader() {
         }
       }
 
-      // 2. PDF Catalog Upload
+      // 2. PDF Attachment Upload
       let finalPdfUrl = pdfUrl;
       if (pdfFile) {
         const safePdfName = sanitizeFilename(pdfFile.name);
-        const primaryPath = `exhibitions/${id}/catalog_${Date.now()}_${safePdfName}`;
-        const fallbackPath = `events/${id}/pdf/catalog_${Date.now()}_${safePdfName}`;
+        const primaryPath = `events/${id}/pdf_${Date.now()}_${safePdfName}`;
+        const fallbackPath = `events/${id}/pdf/doc_${Date.now()}_${safePdfName}`;
         finalPdfUrl = await safeUploadFile(primaryPath, pdfFile, {
           contentType: "application/pdf",
           fallbackPath,
@@ -333,7 +290,7 @@ export default function ExhibitionUploader() {
         }
       }
 
-      // 3. New Gallery Uploads
+      // 3. Gallery Uploads
       const uploadedGallery = [...existingGallery];
       for (let i = 0; i < galleryImages.length; i++) {
         const file = galleryImages[i];
@@ -344,7 +301,7 @@ export default function ExhibitionUploader() {
           useWebWorker: true,
         });
         const safeName = sanitizeFilename(file.name || `gallery_${i}.jpg`);
-        const primaryPath = `exhibitions/${id}/gallery_${Date.now()}_${i}_${safeName}`;
+        const primaryPath = `events/${id}/gallery_${Date.now()}_${i}_${safeName}`;
         const fallbackPath = `events/${id}/gallery/gallery_${Date.now()}_${i}_${safeName}`;
         const url = await safeUploadFile(primaryPath, compressed, {
           contentType: compressed.type || file.type || "image/jpeg",
@@ -357,14 +314,6 @@ export default function ExhibitionUploader() {
         .split("\n\n")
         .map((p) => p.trim())
         .filter(Boolean);
-
-      const linkedArtists = artistsCatalog
-        .filter((a) => formData.selectedArtistIds.includes(a.id))
-        .map((a) => ({ id: a.id, name: a.name }));
-
-      const linkedArtworks = artworksCatalog
-        .filter((art) => formData.selectedArtworkIds.includes(art.id))
-        .map((art) => ({ id: art.id, title: art.title, image: art.coverImage }));
 
       const startTs = toFirestoreTimestamp(formData.startDate);
       const endTs = toFirestoreTimestamp(formData.endDate);
@@ -382,43 +331,37 @@ export default function ExhibitionUploader() {
         curator: formData.curator.trim(),
         description: descriptionArray,
         tour360Url: formData.tour360Url.trim(),
-        artistIds: formData.selectedArtistIds,
-        artworkIds: formData.selectedArtworkIds,
-        artists: linkedArtists,
-        artworks: linkedArtworks,
         coverImage: coverImageUrl || "",
         pdfCatalog: finalPdfUrl || "",
         gallery: uploadedGallery,
+        type: "event",
         updatedAt: new Date().toISOString(),
       };
 
       if (selectedId) {
-        await updateDoc(doc(firestore, "exhibitions", selectedId), payload);
-        await logUpdate(RESOURCE_TYPES.EXHIBITION, selectedId, { title: payload.title });
-        setSuccess("Exhibición actualizada con éxito.");
+        await updateDoc(doc(firestore, "events", selectedId), payload);
+        await logUpdate(RESOURCE_TYPES.EVENT, selectedId, { title: payload.title });
+        setSuccess("Evento actualizado con éxito.");
       } else {
-        await setDoc(doc(firestore, "exhibitions", id), payload);
-        await logCreate(RESOURCE_TYPES.EXHIBITION, id, { title: payload.title });
-        setSuccess("Exhibición creada con éxito.");
+        await setDoc(doc(firestore, "events", id), payload);
+        await logCreate(RESOURCE_TYPES.EVENT, id, { title: payload.title });
+        setSuccess("Evento creado con éxito.");
       }
 
-      // Multi-directional cross-linking
-      await syncExhibitionRelations(id, payload.title, formData.selectedArtistIds, formData.selectedArtworkIds);
-
       resetForm();
-      fetchCatalogs();
+      fetchEvents();
     } catch (e) {
-      console.error("Error en submit de exhibición:", e);
+      console.error("Error en submit de evento:", e);
       setError(formatUploadError(e));
     } finally {
       setLoading(false);
     }
   };
 
-  // Delete Exhibition & ALL associated storage files
+  // Delete Event & ALL associated storage files
   const handleDelete = async () => {
     if (!selectedId) return;
-    if (!confirm("¿Estás seguro de eliminar esta exhibición y TODOS sus archivos asociados de Firebase Storage?")) return;
+    if (!confirm("¿Estás seguro de eliminar este evento y TODOS sus archivos asociados de Firebase Storage?")) return;
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -442,15 +385,14 @@ export default function ExhibitionUploader() {
       });
 
       await safeDeleteFiles(filesToDelete);
-      await deleteDoc(doc(firestore, "exhibitions", selectedId));
-      await logDelete(RESOURCE_TYPES.EXHIBITION, selectedId);
-      await syncExhibitionRelations(selectedId, "", [], []);
-      setSuccess("Exhibición y sus archivos de almacenamiento fueron eliminados con éxito.");
+      await deleteDoc(doc(firestore, "events", selectedId));
+      await logDelete(RESOURCE_TYPES.EVENT, selectedId);
+      setSuccess("Evento y sus archivos de almacenamiento fueron eliminados con éxito.");
       resetForm();
-      fetchCatalogs();
+      fetchEvents();
     } catch (e) {
-      console.error("Error al eliminar exhibición:", e);
-      setError("Error al eliminar la exhibición o sus archivos de Storage.");
+      console.error("Error al eliminar evento:", e);
+      setError("Error al eliminar el evento o sus archivos de Storage.");
     } finally {
       setLoading(false);
     }
@@ -458,19 +400,19 @@ export default function ExhibitionUploader() {
 
   return (
     <div className={styles.form}>
-      <h3 className={styles.subtitle}>Gestión de Exhibiciones</h3>
+      <h3 className={styles.subtitle}>Gestión de Eventos</h3>
 
       {error && <p className={styles.error}>{error}</p>}
       {success && <p className={styles.success}>{success}</p>}
 
       {/* Live Search & Select */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <p className={styles.helpText}>Buscar exhibición por título o seleccionar de la lista:</p>
+        <p className={styles.helpText}>Buscar evento por título o seleccionar de la lista:</p>
         <SearchableDropdown
-          items={exhibitions}
-          onSelect={(item) => handleSelectExhibition(item.id)}
-          placeholder="Buscar exhibición por título..."
-          emptyMessage="No se encontraron exhibiciones con ese título"
+          items={events}
+          onSelect={(item) => handleSelectEvent(item.id)}
+          placeholder="Buscar evento por título..."
+          emptyMessage="No se encontraron eventos con ese título"
           getLabel={(item) => item.title}
           getSubtitle={(item) => (item.status ? `Estado: ${item.status}` : "")}
         />
@@ -478,17 +420,17 @@ export default function ExhibitionUploader() {
         <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.5rem", alignItems: "center" }}>
           <select
             value={selectedId || ""}
-            onChange={(e) => handleSelectExhibition(e.target.value)}
+            onChange={(e) => handleSelectEvent(e.target.value)}
             className={styles.input}
             style={{ flex: 1 }}
           >
-            <option value="">-- Crear Nueva Exhibición --</option>
-            {exhibitions.map((ex) => {
-              const st = calculateExhibitionStatus(ex.startDate, ex.endDate);
-              const label = st === "actual" ? "En curso" : st === "proxima" ? "Próxima" : "Pasada";
+            <option value="">-- Crear Nuevo Evento --</option>
+            {events.map((ev) => {
+              const st = calculateExhibitionStatus(ev.startDate, ev.endDate);
+              const label = st === "actual" ? "En curso" : st === "proxima" ? "Próximo" : "Pasado";
               return (
-                <option key={ex.id} value={ex.id}>
-                  {ex.title} ({label})
+                <option key={ev.id} value={ev.id}>
+                  {ev.title} ({label})
                 </option>
               );
             })}
@@ -506,7 +448,7 @@ export default function ExhibitionUploader() {
                 onClick={handleDelete}
                 className={styles.loginButton}
                 style={{ width: "auto", padding: "0.5rem 1rem", backgroundColor: "#b30000", color: "#fff" }}
-                title="Eliminar esta exhibición y todos sus archivos de Storage"
+                title="Eliminar este evento y todos sus archivos de Storage"
               >
                 🗑 Eliminar
               </button> */}
@@ -517,12 +459,12 @@ export default function ExhibitionUploader() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <div>
-          <p className={styles.helpText}>Título de la Exhibición *</p>
+          <p className={styles.helpText}>Título del Evento *</p>
           <input
             type="text"
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            placeholder="Ej: FUSIONES COGNITIVAS"
+            placeholder="Ej: Concierto de Apertura / Charla con Artistas"
             className={styles.input}
           />
         </div>
@@ -533,7 +475,7 @@ export default function ExhibitionUploader() {
             type="text"
             value={formData.subtitle}
             onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
-            placeholder="Ej: Exploraciones espaciales en la fotografía contemporánea"
+            placeholder="Ej: Diálogo abierto sobre arte contemporáneo"
             className={styles.input}
           />
         </div>
@@ -575,10 +517,10 @@ export default function ExhibitionUploader() {
             Estado detectado automáticamente:{" "}
             <strong style={{ textTransform: "uppercase", color: "#000" }}>
               {calculateExhibitionStatus(formData.startDate, formData.endDate) === "actual"
-                ? "En Curso (Agenda & Destacada)"
+                ? "En Curso (Agenda)"
                 : calculateExhibitionStatus(formData.startDate, formData.endDate) === "proxima"
                   ? "Próximamente"
-                  : "Pasada (Archivo)"}
+                  : "Pasado (Archivo)"}
             </strong>
           </div>
         )}
@@ -589,18 +531,18 @@ export default function ExhibitionUploader() {
             type="text"
             value={formData.location}
             onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-            placeholder="Ej: Sala Principal / Sala 2"
+            placeholder="Ej: Sala Principal / Auditorio"
             className={styles.input}
           />
         </div>
 
         <div>
-          <p className={styles.helpText}>Curaduría / Texto de sala (Opcional)</p>
+          <p className={styles.helpText}>Curaduría / Coordinación (Opcional)</p>
           <input
             type="text"
             value={formData.curator}
             onChange={(e) => setFormData({ ...formData, curator: e.target.value })}
-            placeholder="Ej: Curaduría por Florencia Battiti"
+            placeholder="Ej: Lic. María González"
             className={styles.input}
           />
         </div>
@@ -622,65 +564,9 @@ export default function ExhibitionUploader() {
             rows={5}
             value={formData.descriptionText}
             onChange={(e) => setFormData({ ...formData, descriptionText: e.target.value })}
-            placeholder="Escribe el texto de sala de la exhibición..."
+            placeholder="Escribe la descripción detallada del evento..."
             className={styles.input}
           />
-        </div>
-
-        {/* Participating Artists Selector */}
-        <div>
-          <p className={styles.helpText}>Artistas Participantes</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.5rem" }}>
-            {artistsCatalog.map((artist) => {
-              const isSelected = formData.selectedArtistIds.includes(artist.id);
-              return (
-                <button
-                  key={artist.id}
-                  type="button"
-                  onClick={() => toggleArtistSelection(artist.id)}
-                  style={{
-                    backgroundColor: isSelected ? "#1A2BFF" : "#f0f0f0",
-                    color: isSelected ? "#fff" : "#000",
-                    borderRadius: "4px",
-                    padding: "0.4rem 0.8rem",
-                    fontSize: "0.9rem",
-                    cursor: "pointer",
-                    border: "none",
-                  }}
-                >
-                  {artist.name} {isSelected ? "✓" : "+"}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Displayed Artworks Selector */}
-        <div>
-          <p className={styles.helpText}>Obras Exhibidas</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.5rem" }}>
-            {artworksCatalog.map((art) => {
-              const isSelected = formData.selectedArtworkIds.includes(art.id);
-              return (
-                <button
-                  key={art.id}
-                  type="button"
-                  onClick={() => toggleArtworkSelection(art.id)}
-                  style={{
-                    backgroundColor: isSelected ? "#000" : "#f0f0f0",
-                    color: isSelected ? "#fff" : "#000",
-                    borderRadius: "4px",
-                    padding: "0.4rem 0.8rem",
-                    fontSize: "0.9rem",
-                    cursor: "pointer",
-                    border: "none",
-                  }}
-                >
-                  {art.title} {isSelected ? "✓" : "+"}
-                </button>
-              );
-            })}
-          </div>
         </div>
 
         {/* Cover Image Drag & Drop Dropzone */}
@@ -743,7 +629,7 @@ export default function ExhibitionUploader() {
                     fontWeight: "600",
                   }}
                 >
-                  🗑 Quitar y eliminar imagen de Storage
+                  🗑 Quitar y eliminar portada de Storage
                 </button>
               </div>
             ) : (
@@ -754,9 +640,11 @@ export default function ExhibitionUploader() {
           </div>
         </div>
 
-        {/* PDF Catalog Drag & Drop Dropzone */}
+        {/* PDF Document Drag & Drop Dropzone */}
         <div>
-          <p className={styles.helpText}>Catálogo PDF de la Exhibición (Arrastrá el archivo o hacé clic)</p>
+          <p className={styles.helpText}>
+            Folleto o Programa en PDF (Arrastrá el archivo o hacé clic)
+          </p>
           <div
             className={`${styles.cvDropZone} ${isPdfDragOver ? styles.dragOver : ""}`}
             onDragOver={(e) => {
@@ -780,17 +668,21 @@ export default function ExhibitionUploader() {
             />
             {pdfFile ? (
               <div className={styles.cvFileSelected}>
-                <p style={{ color: "green", fontWeight: "700" }}>Archivo PDF seleccionado: {pdfFile.name}</p>
+                <p style={{ color: "green", fontWeight: "700" }}>
+                  Archivo PDF seleccionado: {pdfFile.name}
+                </p>
                 <span>Hacé clic para cambiar archivo</span>
               </div>
             ) : pdfUrl ? (
               <div className={styles.cvFileSelected}>
-                <p style={{ color: "green", fontWeight: "700" }}>✓ Catálogo PDF adjunto disponible</p>
+                <p style={{ color: "green", fontWeight: "700" }}>
+                  ✓ Documento PDF adjunto disponible
+                </p>
                 <span>Hacé clic o arrastrá para reemplazar</span>
               </div>
             ) : (
               <div className={styles.cvFilePlaceholder}>
-                <p>Arrastrá el catálogo en PDF aquí o hacé clic para explorar</p>
+                <p>Arrastrá el archivo PDF del evento aquí o hacé clic para explorar</p>
               </div>
             )}
           </div>
@@ -816,10 +708,10 @@ export default function ExhibitionUploader() {
           )}
         </div>
 
-        {/* Installation Views Drag & Drop Dropzone */}
+        {/* Event Gallery Drag & Drop Dropzone */}
         <div>
           <p className={styles.helpText}>
-            Imágenes de Registro / Galería de Vista de Sala (Arrastrá archivos o hacé clic)
+            Imágenes de Registro / Galería del Evento (Arrastrá archivos o hacé clic)
           </p>
           <div
             className={`${styles.cvDropZone} ${isGalleryDragOver ? styles.dragOver : ""}`}
@@ -847,7 +739,7 @@ export default function ExhibitionUploader() {
               }}
             />
             <div className={styles.cvFilePlaceholder}>
-              <p>Arrastrá fotos de la sala o del registro aquí</p>
+              <p>Arrastrá fotos del evento aquí</p>
             </div>
           </div>
 
@@ -874,7 +766,7 @@ export default function ExhibitionUploader() {
                     }}
                   >
                     <img
-                      src={img.url}
+                      src={typeof img === "string" ? img : img.url}
                       alt={`Gallery ${idx}`}
                       style={{ width: "100%", height: "80px", objectFit: "cover" }}
                     />
@@ -945,16 +837,16 @@ export default function ExhibitionUploader() {
 
         <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
           <button onClick={handleSubmit} disabled={loading} className={styles.loginButton}>
-            {loading ? "Guardando..." : selectedId ? "Actualizar Exhibición" : "Crear Exhibición"}
+            {loading ? "Guardando..." : selectedId ? "Actualizar Evento" : "Crear Evento"}
           </button>
           {selectedId && (
             <button
               onClick={handleDelete}
               className={styles.loginButton}
               style={{ backgroundColor: "#990000", color: "#fff" }}
-              title="Eliminar exhibición y todos sus archivos de Storage"
+              title="Eliminar evento y todos sus archivos de Storage"
             >
-              🗑 Eliminar Exhibición
+              🗑 Eliminar Evento
             </button>
           )}
           <button

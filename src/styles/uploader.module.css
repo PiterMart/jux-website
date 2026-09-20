@@ -181,7 +181,7 @@
     font-size: 3rem;
     text-align: center;
   }
-  
+
   .navContainer {
     gap: 1.5rem;
     padding: 0 1rem;
@@ -190,7 +190,7 @@
   .navGroup {
     gap: 0.4rem;
   }
-  
+
   .navButton {
     font-size: 0.9rem;
     padding: 0.6rem 1.2rem;
@@ -207,13 +207,13 @@
   .navGroup {
     gap: 0.3rem;
   }
-  
+
   .navButton {
     font-size: 0.8rem;
     padding: 0.5rem 1rem;
     width: 160px;
   }
-  
+
   .logoutButton {
     top: 15px;
     left: 15px;
@@ -538,7 +538,7 @@
   padding: 0;
 }
 
-.title{
+.title {
   font-family: 'Inter', sans-serif;
 }
 
@@ -1047,23 +1047,23 @@
     gap: 0rem;
     padding: 0 1rem;
   }
-  
+
   .flyerImage {
     width: 100% !important;
     height: auto !important;
     max-width: 400px;
   }
-  
+
   .exhibitionTitle {
     font-family: 'Inter', sans-serif;
     font-size: 2.75rem;
     text-align: center;
   }
-  
+
   .exhibitionDate {
     font-size: 1.5rem;
   }
-  
+
   .exhibitionInfo {
     padding: 0.75rem;
   }
@@ -1191,4 +1191,3 @@
   opacity: 0.25;
   cursor: not-allowed;
 }
-

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { getDocs, collection } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
@@ -158,7 +158,7 @@ function GalleryCarousel({ images, onOpenLightbox }) {
   );
 }
 
-function ExhibitionCard({ exhibition, isExpanded, onToggleExpand, onOpenLightbox }) {
+function ExhibitionCard({ exhibition, isExpanded, onToggleExpand, onOpenLightbox, cardRef }) {
   // Static main cover image for the top card
   const coverImage =
     exhibition.coverImage ||
@@ -183,7 +183,7 @@ function ExhibitionCard({ exhibition, isExpanded, onToggleExpand, onOpenLightbox
         : "");
 
   return (
-    <div className={styles.exhibitionCard}>
+    <div ref={cardRef} className={styles.exhibitionCard}>
       {/* Static Full-Width First Image (No Carousel Arrows) */}
       <motion.div
         className={styles.imageWrapper}
@@ -230,7 +230,7 @@ function ExhibitionCard({ exhibition, isExpanded, onToggleExpand, onOpenLightbox
         </button>
       </motion.div>
 
-      {/* In-Place Expanded Detail Section over Blue Background */}
+      {/* In-Place Expanded Detail Section */}
       <AnimatePresence>
         {isExpanded && (
           <motion.div
@@ -268,10 +268,10 @@ function ExhibitionCard({ exhibition, isExpanded, onToggleExpand, onOpenLightbox
               )}
             </div>
 
-            {/* Description (Inverted Colors: Clear background and black text) */}
+            {/* Description */}
             {Array.isArray(exhibition.description) && exhibition.description.length > 0 && (
-              <div className={styles.invertedDescriptionSection}>
-                <div className={styles.invertedDescriptionBody}>
+              <div className={styles.descriptionSection}>
+                <div className={styles.descriptionBody}>
                   {exhibition.description.map((paragraph, idx) => (
                     <p key={idx} className={styles.descriptionParagraph}>
                       {paragraph}
@@ -354,6 +354,7 @@ export default function ExhibicionesPage() {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
   const [activeLightbox, setActiveLightbox] = useState(null); // { images: [], index: 0 }
+  const cardRefs = useRef({});
 
   useEffect(() => {
     async function fetchExhibitions() {
@@ -392,7 +393,51 @@ export default function ExhibicionesPage() {
   }, []);
 
   const handleToggleExpand = (id) => {
-    setExpandedId((prev) => (prev === id ? null : id));
+    const isCurrentlyExpanded = expandedId === id;
+    const prevExpandedId = expandedId;
+    const nextId = isCurrentlyExpanded ? null : id;
+
+    setExpandedId(nextId);
+
+    const el = cardRefs.current[id];
+    if (!el) return;
+
+    const headerEl = document.querySelector("header");
+    const navbarOffset = headerEl ? headerEl.offsetHeight : (window.innerWidth <= 768 ? 70 : 85);
+
+    // Check if an item above `id` was expanded and is now closing
+    let heightToLose = 0;
+    if (prevExpandedId && prevExpandedId !== id) {
+      const prevIndex = exhibitions.findIndex((e) => e.id === prevExpandedId);
+      const targetIndex = exhibitions.findIndex((e) => e.id === id);
+      if (prevIndex !== -1 && prevIndex < targetIndex) {
+        const prevEl = cardRefs.current[prevExpandedId];
+        const expandedEl = prevEl?.querySelector(`.${styles.expandedContainer}`);
+        heightToLose = expandedEl?.offsetHeight || 0;
+      }
+    }
+
+    const rect = el.getBoundingClientRect();
+    const currentTop = rect.top;
+    const targetY = currentTop + window.scrollY - heightToLose - navbarOffset;
+
+    window.scrollTo({
+      top: Math.max(0, targetY),
+      behavior: "smooth",
+    });
+
+    // Follow-up check after Framer Motion animation settles to guarantee exact alignment
+    setTimeout(() => {
+      const targetEl = cardRefs.current[id];
+      if (!targetEl) return;
+      const currentOffset = targetEl.getBoundingClientRect().top;
+      if (Math.abs(currentOffset - navbarOffset) > 4) {
+        window.scrollTo({
+          top: Math.max(0, window.scrollY + currentOffset - navbarOffset),
+          behavior: "smooth",
+        });
+      }
+    }, 650);
   };
 
   const handleOpenLightbox = (images, index) => {
@@ -411,6 +456,9 @@ export default function ExhibicionesPage() {
                 isExpanded={expandedId === ex.id}
                 onToggleExpand={() => handleToggleExpand(ex.id)}
                 onOpenLightbox={handleOpenLightbox}
+                cardRef={(node) => {
+                  if (node) cardRefs.current[ex.id] = node;
+                }}
               />
             ))}
           </div>

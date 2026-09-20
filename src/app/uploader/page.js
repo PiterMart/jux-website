@@ -14,6 +14,8 @@ import ExhibitionUploader from "../firebase/ExhibitionUploader";
 import ExhibitionList from "../firebase/ExhibitionList";
 import EducacionUploader from "../firebase/EducacionUploader";
 import EducacionList from "../firebase/EducacionList";
+import EventUploader from "../firebase/EventUploader";
+import EventList from "../firebase/EventList";
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState("exhibitions");
@@ -124,6 +126,10 @@ export default function Home() {
             <button onClick={() => setActiveSection("educacion")} className={styles.navButton}>EDUCACIÓN</button>
             <button onClick={() => setActiveSection("educacionList")} className={styles.navButton}>Lista Educación</button>
           </div>
+          <div className={styles.navGroup}>
+            <button onClick={() => setActiveSection("events")} className={styles.navButton}>EVENTOS</button>
+            <button onClick={() => setActiveSection("eventsList")} className={styles.navButton}>Lista Eventos</button>
+          </div>
         </div>
 
         {/* EXHIBICIONES */}
@@ -183,6 +189,18 @@ export default function Home() {
         {activeSection === "educacionList" && (
           <div style={{ width: "100%", padding: "1rem", maxWidth: "1000px", margin: "auto" }}>
             <EducacionList />
+          </div>
+        )}
+
+        {/* EVENTOS */}
+        {activeSection === "events" && (
+          <div style={{ width: "100%", padding: "1rem", maxWidth: "1000px", margin: "auto" }}>
+            <EventUploader />
+          </div>
+        )}
+        {activeSection === "eventsList" && (
+          <div style={{ width: "100%", padding: "1rem", maxWidth: "1000px", margin: "auto" }}>
+            <EventList />
           </div>
         )}
       </main>

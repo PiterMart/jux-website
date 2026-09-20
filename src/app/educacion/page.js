@@ -1,15 +1,22 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
+import { motion, AnimatePresence } from "framer-motion";
 import { firestore } from "../firebase/firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 import pageStyles from "../../styles/page.module.css";
 import styles from "../../styles/educacion.module.css";
 
+// Dynamic import with SSR disabled for react-pdf
+const PdfModalViewer = dynamic(() => import("../../components/PdfModalViewer"), {
+  ssr: false,
+});
+
 export default function EducacionPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activePdf, setActivePdf] = useState(null); // Holds { url, title }
 
   useEffect(() => {
     const fetchEducacion = async () => {
@@ -19,7 +26,6 @@ export default function EducacionPage() {
           id: doc.id,
           ...doc.data(),
         }));
-        // Sort by order/creation/updatedAt if available
         list.sort((a, b) => {
           const timeA = a.createdAt || a.updatedAt || "";
           const timeB = b.createdAt || b.updatedAt || "";
@@ -64,28 +70,39 @@ export default function EducacionPage() {
             }}
           >
             {items.map((item) => (
-              <motion.a
+              <motion.button
+                type="button"
                 key={item.id}
-                href={item.pdfUrl || "#"}
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={() => setActivePdf({ url: item.pdfUrl, title: item.title })}
                 className={styles.itemRow}
+                style={{ textAlign: "left", background: "none", border: "none", cursor: "pointer", width: "100%" }}
                 variants={{
                   hidden: { opacity: 0, y: 20 },
                   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
                 }}
               >
-                <h2 className={styles.itemTitle}>{item.title}</h2>
+                <h2 className={styles.itemTitle}>
+                  {item.title} <span className={styles.arrow} aria-hidden="true">→</span>
+                </h2>
                 {item.hashtags && item.hashtags.length > 0 && (
                   <span className={styles.itemHashtags}>
                     {formatHashtags(item.hashtags)}
                   </span>
                 )}
-              </motion.a>
+              </motion.button>
             ))}
           </motion.div>
         )}
       </main>
+
+      {/* PDF Modal Viewer */}
+      {activePdf && (
+        <PdfModalViewer
+          file={activePdf.url}
+          title={activePdf.title}
+          onClose={() => setActivePdf(null)}
+        />
+      )}
     </div>
   );
 }

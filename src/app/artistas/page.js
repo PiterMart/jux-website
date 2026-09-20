@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { firestore } from "../firebase/firebaseConfig";
@@ -38,6 +38,7 @@ export default function ArtistasPage() {
   const [artworksByArtist, setArtworksByArtist] = useState({});
   const [loading, setLoading] = useState(true);
   const [expandedArtistId, setExpandedArtistId] = useState(null);
+  const rowRefs = useRef({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,7 +76,51 @@ export default function ArtistasPage() {
   }, []);
 
   const toggleArtist = (id) => {
-    setExpandedArtistId((prev) => (prev === id ? null : id));
+    const isCurrentlyExpanded = expandedArtistId === id;
+    const prevExpandedId = expandedArtistId;
+    const nextId = isCurrentlyExpanded ? null : id;
+
+    setExpandedArtistId(nextId);
+
+    const el = rowRefs.current[id];
+    if (!el) return;
+
+    const navbarOffset = window.innerWidth <= 768 ? 70 : 85;
+
+    // Check if an item above `id` was expanded and is now closing
+    let heightToLose = 0;
+    if (prevExpandedId && prevExpandedId !== id) {
+      const prevIndex = artists.findIndex((a) => a.id === prevExpandedId);
+      const targetIndex = artists.findIndex((a) => a.id === id);
+      if (prevIndex !== -1 && prevIndex < targetIndex) {
+        const prevEl = rowRefs.current[prevExpandedId];
+        const detailsEl = prevEl?.querySelector(`.${styles.artistDetails}`);
+        const worksEl = prevEl?.querySelector(`.${styles.artworksFullSection}`);
+        heightToLose = (detailsEl?.offsetHeight || 0) + (worksEl?.offsetHeight || 0);
+      }
+    }
+
+    const rect = el.getBoundingClientRect();
+    const currentTop = rect.top;
+    const targetY = currentTop + window.scrollY - heightToLose - navbarOffset;
+
+    window.scrollTo({
+      top: Math.max(0, targetY),
+      behavior: "smooth",
+    });
+
+    // Follow-up check after animation settles to guarantee exact row alignment
+    setTimeout(() => {
+      const targetEl = rowRefs.current[id];
+      if (!targetEl) return;
+      const currentOffset = targetEl.getBoundingClientRect().top;
+      if (Math.abs(currentOffset - navbarOffset) > 4) {
+        window.scrollTo({
+          top: Math.max(0, window.scrollY + currentOffset - navbarOffset),
+          behavior: "smooth",
+        });
+      }
+    }, 450);
   };
 
   return (
@@ -112,19 +157,22 @@ export default function ArtistasPage() {
               return (
                 <motion.div
                   key={artist.id}
+                  ref={(node) => {
+                    if (node) rowRefs.current[artist.id] = node;
+                  }}
                   className={styles.artistRow}
                   variants={{
                     hidden: { opacity: 0, y: 25 },
                     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
                   }}
                 >
-                  <button
-                    type="button"
-                    className={`${styles.artistHeader} ${isExpanded ? styles.artistHeaderActive : ""}`}
-                    onClick={() => toggleArtist(artist.id)}
-                    aria-expanded={isExpanded}
-                  >
-                    <div className={styles.imageWrapper}>
+                  <div className={`${styles.artistRowInner} ${isExpanded ? styles.artistRowExpanded : ""}`}>
+                    <button
+                      type="button"
+                      className={`${styles.imageWrapper} ${isExpanded ? styles.imageWrapperExpanded : ""}`}
+                      onClick={() => toggleArtist(artist.id)}
+                      aria-expanded={isExpanded}
+                    >
                       {artist.profilePicture ? (
                         <img
                           src={artist.profilePicture}
@@ -136,20 +184,27 @@ export default function ArtistasPage() {
                           {(artist.name || "A").charAt(0)}
                         </span>
                       )}
-                    </div>
+                    </button>
 
-                    <div className={styles.nameBlock}>
-                      <h2 className={styles.artistName}>{artist.name}</h2>
-                      {artist.origin && <span className={styles.artistOrigin}>{artist.origin}</span>}
-                    </div>
+                    <div className={styles.mainColumn}>
+                      <button
+                        type="button"
+                        className={styles.artistHeader}
+                        onClick={() => toggleArtist(artist.id)}
+                        aria-expanded={isExpanded}
+                      >
+                        <div className={styles.nameBlock}>
+                          <h2 className={styles.artistName}>{artist.name}</h2>
+                          {artist.origin && <span className={styles.artistOrigin}>{artist.origin}</span>}
+                        </div>
 
-                    <span
-                      className={styles.toggleSign}
-                      style={{ transform: isExpanded ? "rotate(45deg)" : "rotate(0deg)" }}
-                    >
-                      +
-                    </span>
-                  </button>
+                        <span
+                          className={styles.toggleSign}
+                          style={{ transform: isExpanded ? "rotate(45deg)" : "rotate(0deg)" }}
+                        >
+                          +
+                        </span>
+                      </button>
 
                   <AnimatePresence>
                     {isExpanded && (
@@ -170,7 +225,6 @@ export default function ArtistasPage() {
 
                           {artist.birthDate && (
                             <span className={styles.metadataItem} title="Año de nacimiento">
-
                               {artist.birthDate}
                             </span>
                           )}
@@ -295,6 +349,8 @@ export default function ArtistasPage() {
                       </motion.div>
                     )}
                   </AnimatePresence>
+                    </div>
+                  </div>
                 </motion.div>
               );
             })}

@@ -1,6 +1,6 @@
 import imageCompression from "browser-image-compression";
 import { getAuth, signInAnonymously } from "firebase/auth";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { app } from "./firebaseConfig";
 import { storage } from "./firebaseStorage";
 
@@ -31,7 +31,8 @@ export async function ensureAuth() {
  */
 export async function safeUploadFile(primaryPath, file, options = {}) {
   await ensureAuth();
-  const metadata = options.contentType ? { contentType: options.contentType } : { contentType: file.type || "image/jpeg" };
+  const determinedType = options.contentType || file.type || "image/jpeg";
+  const metadata = { contentType: determinedType };
   const fallbackPath = options.fallbackPath;
 
   try {
@@ -48,6 +49,46 @@ export async function safeUploadFile(primaryPath, file, options = {}) {
     }
     throw err;
   }
+}
+
+/**
+ * Safely deletes a file from Firebase Storage given its download URL or storage path.
+ * Ignores missing files or non-storage URLs gracefully.
+ */
+export async function safeDeleteFile(fileUrlOrPath) {
+  if (!fileUrlOrPath || typeof fileUrlOrPath !== "string") return false;
+  // Ignore local blob / data URLs
+  if (fileUrlOrPath.startsWith("blob:") || fileUrlOrPath.startsWith("data:")) return false;
+
+  try {
+    await ensureAuth();
+    const fileRef = ref(storage, fileUrlOrPath);
+    await deleteObject(fileRef);
+    console.log("Archivo eliminado con éxito de Firebase Storage:", fileUrlOrPath);
+    return true;
+  } catch (err) {
+    const code = err?.code || "";
+    // If file was already deleted or doesn't exist, treat as success
+    if (code === "storage/object-not-found" || String(err).includes("object-not-found")) {
+      console.warn("El archivo ya no existía en Firebase Storage:", fileUrlOrPath);
+      return true;
+    }
+    console.warn("Aviso al eliminar archivo de Firebase Storage:", err?.message || err);
+    return false;
+  }
+}
+
+/**
+ * Safely deletes multiple files from Firebase Storage.
+ */
+export async function safeDeleteFiles(urlsOrPaths) {
+  if (!Array.isArray(urlsOrPaths) || urlsOrPaths.length === 0) return;
+  await Promise.allSettled(
+    urlsOrPaths.map((item) => {
+      const url = typeof item === "string" ? item : item?.url;
+      return safeDeleteFile(url);
+    })
+  );
 }
 
 /**
@@ -74,10 +115,21 @@ export function sanitizeFilename(filename) {
  * Safely compresses an image file. If browser-image-compression fails or is unsupported,
  * falls back gracefully to returning the original file.
  */
-export async function safeCompressImage(file, options = { maxSizeMB: 1, maxWidthOrHeight: 1800, useWebWorker: true }) {
+export async function safeCompressImage(
+  file,
+  options = { maxSizeMB: 4, maxWidthOrHeight: 2560, initialQuality: 0.9, useWebWorker: true }
+) {
   if (!file || !(file instanceof Blob)) return file;
+  if (file.type === "image/gif") return file;
   try {
-    const compressed = await imageCompression(file, options);
+    const mergedOptions = {
+      maxSizeMB: 4,
+      maxWidthOrHeight: 2560,
+      initialQuality: 0.9,
+      useWebWorker: true,
+      ...options,
+    };
+    const compressed = await imageCompression(file, mergedOptions);
     return compressed || file;
   } catch (err) {
     console.warn("Compresión de imagen omitida, utilizando archivo original:", err);

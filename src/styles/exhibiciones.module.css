@@ -18,6 +18,7 @@
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
+  scroll-margin-top: 85px;
 }
 
 .imageWrapper {
@@ -150,17 +151,17 @@
   white-space: nowrap;
 }
 
-/* Expanded Information Container over Blue Background */
+/* Expanded Information Container over Page Background (No Blue Background) */
 .expandedContainer {
   width: 100%;
-  background-color: #1A2BFF;
-  color: var(--background, #D3D5CE);
-  padding: 1rem 2.5rem 4rem 2.5rem;
+  background-color: transparent;
+  color: #111111;
+  padding: 2.5rem 2.5rem 4rem 2.5rem;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 3.5rem;
-  border-top: 1px solid rgba(211, 213, 206, 0.25);
+  border-bottom: 2px solid rgba(17, 17, 17, 0.2);
 }
 
 .expandedHeader {
@@ -168,12 +169,12 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 2rem;
-  padding-top: 1rem;
+  padding-top: 0.5rem;
 }
 
 .statusTag {
-  background-color: var(--background, #D3D5CE);
-  color: #1A2BFF;
+  background-color: #111111;
+  color: var(--background, #D3D5CE);
   padding: 0.45rem 1rem;
   font-size: 0.85rem;
   font-weight: 800;
@@ -184,6 +185,7 @@
 
 .curatorText {
   font-size: 1.1rem;
+  color: #111111;
   opacity: 0.95;
 }
 
@@ -192,29 +194,28 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.85rem 1.75rem;
-  background-color: var(--background, #D3D5CE);
-  color: #1A2BFF;
+  background-color: #111111;
+  color: var(--background, #D3D5CE);
   font-weight: 800;
   font-size: 0.95rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   text-decoration: none;
   border-radius: 2px;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
 }
 
 .tour360Btn:hover {
-  opacity: 0.9;
+  background-color: #333333;
   transform: translateY(-2px);
 }
 
+.descriptionSection,
 .invertedDescriptionSection {
-  background-color: var(--background, #D3D5CE);
+  background-color: transparent;
   color: #111111;
-  padding: 2.75rem 2.5rem;
-  width: calc(100% + 5rem);
-  margin-left: -2.5rem;
-  margin-right: -2.5rem;
+  padding: 0;
+  width: 100%;
   box-sizing: border-box;
 }
 
@@ -230,6 +231,7 @@
   padding-bottom: 0.5rem;
 }
 
+.descriptionBody,
 .invertedDescriptionBody {
   font-size: 1.2rem;
   line-height: 1.85;
@@ -243,17 +245,10 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--background, #D3D5CE);
+  color: #111111;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(211, 213, 206, 0.3);
+  border-bottom: 1.5px solid rgba(17, 17, 17, 0.2);
   padding-bottom: 0.5rem;
-}
-
-.descriptionBody {
-  font-size: 1.2rem;
-  line-height: 1.85;
-  color: var(--background, #D3D5CE);
-  max-width: 1000px;
 }
 
 .descriptionParagraph {
@@ -267,20 +262,21 @@
 }
 
 .artistTag {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(211, 213, 206, 0.4);
-  color: var(--background, #D3D5CE);
+  background: rgba(0, 0, 0, 0.04);
+  border: 1.5px solid rgba(17, 17, 17, 0.35);
+  color: #111111;
   padding: 0.6rem 1.25rem;
   font-size: 1.05rem;
   font-weight: 700;
   text-decoration: none;
   border-radius: 2px;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .artistTag:hover {
-  background: var(--background, #D3D5CE);
-  color: #1A2BFF;
+  background: #111111;
+  color: var(--background, #D3D5CE);
+  border-color: #111111;
 }
 
 .artworksGrid {
@@ -290,18 +286,19 @@
 }
 
 .artworkCard {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(211, 213, 206, 0.2);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(17, 17, 17, 0.15);
   border-radius: 4px;
   overflow: hidden;
   text-decoration: none;
-  color: var(--background, #D3D5CE);
-  transition: transform 0.3s ease, border-color 0.3s ease;
+  color: #111111;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .artworkCard:hover {
   transform: translateY(-4px);
-  border-color: var(--background, #D3D5CE);
+  border-color: #111111;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 .artworkImg {
@@ -318,16 +315,17 @@
 .artworkTitle {
   font-size: 1.15rem;
   font-weight: 800;
+  color: #111111;
   margin: 0;
 }
 
 .artworkArtist {
   font-size: 0.95rem;
-  opacity: 0.85;
+  color: #555555;
   margin-top: 0.35rem;
 }
 
-/* Full-Width Gallery Carousel Container inside Blue Card */
+/* Full-Width Gallery Carousel Container */
 .fullWidthGallerySection {
   width: calc(100% + 5rem);
   margin-left: -2.5rem;
@@ -348,7 +346,7 @@
   width: 100%;
   height: clamp(400px, 68vh, 750px);
   overflow: hidden;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.15);
   cursor: zoom-in;
 }
 
@@ -371,7 +369,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background-color: rgba(211, 213, 206, 0.35);
+  background-color: rgba(17, 17, 17, 0.25);
   border: none;
   cursor: pointer;
   padding: 0;
@@ -379,7 +377,7 @@
 }
 
 .activeDot {
-  background-color: var(--background, #D3D5CE);
+  background-color: #111111;
   transform: scale(1.3);
 }
 
@@ -387,8 +385,8 @@
   align-self: center;
   margin-top: 2rem;
   background: transparent;
-  border: 2px solid var(--background, #D3D5CE);
-  color: var(--background, #D3D5CE);
+  border: 2px solid #111111;
+  color: #111111;
   padding: 0.85rem 2.5rem;
   font-family: var(--font-family-base), "Josefin Sans", sans-serif;
   font-size: 1rem;
@@ -400,8 +398,8 @@
 }
 
 .closeExpandedBtn:hover {
-  background-color: var(--background, #D3D5CE);
-  color: #1A2BFF;
+  background-color: #111111;
+  color: var(--background, #D3D5CE);
 }
 
 /* Lightbox Modal Overlay */
@@ -517,15 +515,16 @@
   }
 
   .expandedContainer {
-    padding: 0 1.25rem 3rem 1.25rem;
+    padding: 1.5rem 1.25rem 3rem 1.25rem;
     gap: 2.5rem;
   }
 
+  .descriptionSection,
   .invertedDescriptionSection {
-    width: calc(100% + 2.5rem);
-    margin-left: -1.25rem;
-    margin-right: -1.25rem;
-    padding: 2rem 1.25rem;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0;
   }
 
   .fullWidthGallerySection {

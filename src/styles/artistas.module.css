@@ -1,7 +1,8 @@
 .container {
   padding: 8rem 1.5rem 6rem 1.5rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  margin-left: 1rem;
+  width: calc(100% - 1rem);
+  max-width: 100%;
   box-sizing: border-box;
 }
 
@@ -16,18 +17,34 @@
   border-bottom: 1px solid rgba(17, 17, 17, 0.15);
   padding-bottom: 2rem;
   width: 100%;
+  scroll-margin-top: 85px;
+}
+
+.artistRowInner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.mainColumn {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
 }
 
 .artistHeader {
   display: flex;
-  align-items: center;
-  gap: 2.5rem;
-  cursor: pointer;
+  align-items: flex-start;
+  justify-content: space-between;
   width: 100%;
   text-align: left;
   background: none;
   border: none;
-  padding: 0.5rem 0;
+  padding: 0;
+  margin-top: 0.5rem;
+  cursor: pointer;
   transition: all 0.25s ease;
 }
 
@@ -41,11 +58,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+  position: relative;
+  transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    height 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s ease;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 
-.artistHeader:hover .imageWrapper {
+.imageWrapper:hover {
   transform: scale(1.04);
+}
+
+.imageWrapperExpanded {
+  width: clamp(280px, 28vw, 420px);
+  height: auto;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
 }
 
 .artistImage {
@@ -53,6 +83,11 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.imageWrapperExpanded .artistImage {
+  height: auto;
+  object-fit: contain;
 }
 
 .monogram {
@@ -66,7 +101,10 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  text-align: left;
   flex: 1;
+  margin-left: 1rem;
+  min-width: 0;
 }
 
 .artistName {
@@ -78,7 +116,10 @@
   margin: 0;
   color: var(--foreground, #111111);
   text-transform: uppercase;
+  text-align: left;
   transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .artistHeader:hover .artistName,
@@ -93,6 +134,7 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-top: 0.5rem;
+  text-align: left;
 }
 
 .toggleSign {
@@ -105,10 +147,17 @@
 
 /* In-Page Expanded Artist Detail Section */
 .artistDetails {
-  padding-top: 2.5rem;
-  padding-left: clamp(0px, 14vw, 175px);
+  padding-top: 2rem;
+  padding-left: 0;
   width: 100%;
   box-sizing: border-box;
+}
+
+.artworksFullSection {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: none;
+  width: 100%;
 }
 
 .metadataGrid {
@@ -260,15 +309,42 @@
 @media (max-width: 768px) {
   .container {
     padding: 6rem 1rem 4rem 1rem;
+    margin-left: 0;
+    width: 100%;
   }
 
-  .artistHeader {
-    gap: 1.25rem;
+  .artistRowInner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
   }
 
   .imageWrapper {
-    width: 80px;
-    height: 80px;
+    display: flex;
+    width: 100%;
+    height: auto;
+    max-height: 0;
+    opacity: 0;
+    visibility: hidden;
+    margin-bottom: 0;
+    transition: max-height 0.5s cubic-bezier(0.16, 1, 0.3, 1), 
+                opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                margin-bottom 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .imageWrapperExpanded {
+    max-height: 80vh;
+    opacity: 1;
+    visibility: visible;
+    margin-bottom: 1.25rem;
+  }
+
+  .imageWrapperExpanded .artistImage {
+    width: 100%;
+    height: auto;
+    max-height: 80vh;
+    object-fit: contain;
   }
 
   .artistName {
@@ -283,5 +359,10 @@
   .artworksGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
+  }
+
+  .artworksFullSection {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
   }
 }

@@ -5,21 +5,20 @@ import { getDocs, collection, doc, deleteDoc } from "firebase/firestore";
 import { calculateExhibitionStatus, formatDateDisplay } from "./dateUtils";
 import { safeDeleteFiles } from "./uploadUtils";
 import { logDelete, RESOURCE_TYPES } from "./activityLogger";
-import { syncExhibitionRelations } from "./relationalSync";
 import styles from "../../styles/uploader.module.css";
 
-export default function ExhibitionList() {
-  const [exhibitions, setExhibitions] = useState([]);
+export default function EventList() {
+  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
-    fetchExhibitions();
+    fetchEvents();
   }, []);
 
-  const fetchExhibitions = async () => {
+  const fetchEvents = async () => {
     try {
-      const snap = await getDocs(collection(firestore, "exhibitions"));
+      const snap = await getDocs(collection(firestore, "events"));
       const list = snap.docs.map((doc) => {
         const data = doc.data();
         const startStr =
@@ -43,54 +42,43 @@ export default function ExhibitionList() {
         };
       });
       list.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
-      setExhibitions(list);
+      setEvents(list);
     } catch (e) {
-      console.error("Error fetching exhibitions:", e);
+      console.error("Error fetching events:", e);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteExhibition = async (ex) => {
-    if (
-      !confirm(
-        `¿Estás seguro de eliminar la exhibición "${ex.title}" y todos sus archivos asociados de Storage?`
-      )
-    ) {
+  const handleDeleteEvent = async (ev) => {
+    if (!confirm(`¿Estás seguro de eliminar el evento "${ev.title}" y todos sus archivos de Storage?`)) {
       return;
     }
 
-    setDeletingId(ex.id);
+    setDeletingId(ev.id);
     try {
       const filesToDelete = [];
-      if (ex.coverImage && typeof ex.coverImage === "string") {
-        filesToDelete.push(ex.coverImage);
+      if (ev.coverImage && typeof ev.coverImage === "string") {
+        filesToDelete.push(ev.coverImage);
       }
-      if (ex.pdfCatalog && typeof ex.pdfCatalog === "string") {
-        filesToDelete.push(ex.pdfCatalog);
+      if (ev.pdfCatalog && typeof ev.pdfCatalog === "string") {
+        filesToDelete.push(ev.pdfCatalog);
       }
-      if (Array.isArray(ex.gallery)) {
-        ex.gallery.forEach((g) => {
+      if (Array.isArray(ev.gallery)) {
+        ev.gallery.forEach((g) => {
           const u = typeof g === "string" ? g : g?.url;
-          if (u) filesToDelete.push(u);
-        });
-      }
-      if (Array.isArray(ex.images)) {
-        ex.images.forEach((img) => {
-          const u = typeof img === "string" ? img : img?.url;
           if (u) filesToDelete.push(u);
         });
       }
 
       await safeDeleteFiles(filesToDelete);
-      await deleteDoc(doc(firestore, "exhibitions", ex.id));
-      await logDelete(RESOURCE_TYPES.EXHIBITION, ex.id);
-      await syncExhibitionRelations(ex.id, "", [], []);
+      await deleteDoc(doc(firestore, "events", ev.id));
+      await logDelete(RESOURCE_TYPES.EVENT, ev.id);
 
-      setExhibitions((prev) => prev.filter((item) => item.id !== ex.id));
+      setEvents((prev) => prev.filter((item) => item.id !== ev.id));
     } catch (err) {
-      console.error("Error al eliminar exhibición:", err);
-      alert("Ocurrió un error al eliminar la exhibición de Storage o base de datos.");
+      console.error("Error al eliminar evento:", err);
+      alert("Ocurrió un error al eliminar el evento de Storage o base de datos.");
     } finally {
       setDeletingId(null);
     }
@@ -99,54 +87,54 @@ export default function ExhibitionList() {
   if (loading)
     return (
       <div className={styles.form}>
-        <p>Cargando exhibiciones...</p>
+        <p>Cargando eventos...</p>
       </div>
     );
 
   return (
     <div className={styles.form}>
-      <h3 className={styles.title}>Lista de Exhibiciones ({exhibitions.length})</h3>
-      {exhibitions.length === 0 ? (
-        <p>No hay exhibiciones registradas aún.</p>
+      <h3 className={styles.title}>Lista de Eventos ({events.length})</h3>
+      {events.length === 0 ? (
+        <p>No hay eventos registrados aún.</p>
       ) : (
         <div className={styles.artistsList}>
-          {exhibitions.map((ex) => (
+          {events.map((ev) => (
             <div
-              key={ex.id}
+              key={ev.id}
               className={styles.artistCard}
               style={{ display: "flex", gap: "1rem", alignItems: "center", position: "relative" }}
             >
-              {ex.coverImage && (
+              {ev.coverImage && (
                 <img
-                  src={ex.coverImage}
-                  alt={ex.title}
+                  src={ev.coverImage}
+                  alt={ev.title}
                   style={{ width: "90px", height: "60px", objectFit: "cover", borderRadius: "4px" }}
                 />
               )}
               <div style={{ flex: 1 }}>
-                <h4 style={{ margin: 0 }}>{ex.title}</h4>
+                <h4 style={{ margin: 0 }}>{ev.title}</h4>
                 <p className={styles.artistOrigin} style={{ margin: "0.25rem 0 0 0" }}>
                   Estado:{" "}
                   <strong>
-                    {ex.status === "actual"
+                    {ev.status === "actual"
                       ? "En Curso"
-                      : ex.status === "proxima"
-                      ? "Próxima"
-                      : "Pasada (Archivo)"}
+                      : ev.status === "proxima"
+                      ? "Próximo"
+                      : "Pasado (Archivo)"}
                   </strong>
-                  {ex.location ? ` • ${ex.location}` : ""}
+                  {ev.location ? ` • ${ev.location}` : ""}
                 </p>
-                {(ex.startDate || ex.endDate) && (
+                {(ev.startDate || ev.endDate) && (
                   <p className={styles.artistId} style={{ margin: "0.25rem 0 0 0" }}>
-                    Fechas: {formatDateDisplay(ex.startDate)}{" "}
-                    {ex.endDate ? `- ${formatDateDisplay(ex.endDate)}` : ""}
+                    Fechas: {formatDateDisplay(ev.startDate)}{" "}
+                    {ev.endDate ? `- ${formatDateDisplay(ev.endDate)}` : ""}
                   </p>
                 )}
               </div>
               <button
                 type="button"
-                onClick={() => handleDeleteExhibition(ex)}
-                disabled={deletingId === ex.id}
+                onClick={() => handleDeleteEvent(ev)}
+                disabled={deletingId === ev.id}
                 style={{
                   backgroundColor: "#b30000",
                   color: "#fff",
@@ -158,9 +146,9 @@ export default function ExhibitionList() {
                   cursor: "pointer",
                   whiteSpace: "nowrap",
                 }}
-                title="Eliminar exhibición y archivos de Storage"
+                title="Eliminar evento y archivos de Storage"
               >
-                {deletingId === ex.id ? "Eliminando..." : "🗑 Eliminar"}
+                {deletingId === ev.id ? "Eliminando..." : "🗑 Eliminar"}
               </button>
             </div>
           ))}

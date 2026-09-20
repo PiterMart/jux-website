@@ -8,7 +8,6 @@ import { firestore } from "../firebase/firebaseConfig";
 import { calculateExhibitionStatus, formatDateDisplay } from "../firebase/dateUtils";
 import pageStyles from "../../styles/page.module.css";
 import styles from "../../styles/agenda.module.css";
-import Lightbox from "../../components/Lightbox";
 
 function getBigDateDisplay(startDateStr) {
   if (!startDateStr) return { day: "—", month: "" };
@@ -29,20 +28,15 @@ function getBigDateDisplay(startDateStr) {
 }
 
 export default function AgendaPage() {
-  const [activities, setActivities] = useState([]);
+  const [exhibitions, setExhibitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
-  const [lightboxState, setLightboxState] = useState({ isOpen: false, slides: [], index: 0 });
 
   useEffect(() => {
     async function fetchAgenda() {
       try {
-        const [exSnap, evSnap] = await Promise.all([
-          getDocs(collection(firestore, "exhibitions")),
-          getDocs(collection(firestore, "events")),
-        ]);
-
-        const exhibitionsList = exSnap.docs.map((d) => {
+        const snap = await getDocs(collection(firestore, "exhibitions"));
+        const list = snap.docs.map((d) => {
           const data = d.data();
           const startStr =
             data.startDate ||
@@ -62,37 +56,10 @@ export default function AgendaPage() {
             startDate: startStr,
             endDate: endStr,
             status: data.status || autoStatus,
-            itemType: "exhibition",
           };
         });
 
-        const eventsList = evSnap.docs.map((d) => {
-          const data = d.data();
-          const startStr =
-            data.startDate ||
-            (data.startTimestamp?.seconds
-              ? new Date(data.startTimestamp.seconds * 1000).toISOString().split("T")[0]
-              : "");
-          const endStr =
-            data.endDate ||
-            (data.endTimestamp?.seconds
-              ? new Date(data.endTimestamp.seconds * 1000).toISOString().split("T")[0]
-              : "");
-          const autoStatus = calculateExhibitionStatus(startStr, endStr);
-
-          return {
-            id: d.id,
-            ...data,
-            startDate: startStr,
-            endDate: endStr,
-            status: data.status || autoStatus,
-            itemType: "event",
-          };
-        });
-
-        const combined = [...exhibitionsList, ...eventsList];
-
-        combined.sort((a, b) => {
+        list.sort((a, b) => {
           const statusOrder = { actual: 0, proxima: 1, pasada: 2 };
           const orderDiff = (statusOrder[a.status] ?? 2) - (statusOrder[b.status] ?? 2);
           if (orderDiff !== 0) return orderDiff;
@@ -102,7 +69,7 @@ export default function AgendaPage() {
           return timeB - timeA;
         });
 
-        setActivities(combined);
+        setExhibitions(list);
       } catch (err) {
         console.error("Error fetching gallery agenda:", err);
       } finally {
@@ -143,7 +110,7 @@ export default function AgendaPage() {
           <p style={{ textAlign: "center", padding: "4rem 0", color: "#888", fontSize: "1.1rem" }}>
             Cargando agenda...
           </p>
-        ) : activities.length === 0 ? (
+        ) : exhibitions.length === 0 ? (
           <p style={{ textAlign: "center", padding: "4rem 0", color: "#888", fontSize: "1.1rem" }}>
             No hay actividades programadas en este momento.
           </p>
@@ -160,22 +127,13 @@ export default function AgendaPage() {
               },
             }}
           >
-            {activities.map((item) => {
+            {exhibitions.map((item) => {
               const isExpanded = expandedId === item.id;
               const dateInfo = getBigDateDisplay(item.startDate);
               const fullDateRange =
                 item.startDate || item.endDate
                   ? `${formatDateDisplay(item.startDate)} ${item.endDate ? `— ${formatDateDisplay(item.endDate)}` : ""}`
                   : null;
-
-              const galleryUrls = (item.gallery || item.images || [])
-                .map((g) => (typeof g === "string" ? g : g?.url || ""))
-                .filter(Boolean);
-
-              const allMediaSlides = [
-                ...(item.coverImage ? [{ src: item.coverImage, alt: item.title }] : []),
-                ...galleryUrls.map((url, idx) => ({ src: url, alt: `${item.title} - Registro ${idx + 1}` })),
-              ];
 
               return (
                 <motion.div
@@ -206,29 +164,13 @@ export default function AgendaPage() {
                     </div>
 
                     {item.coverImage && (
-                      <div
-                        className={styles.coverWrapper}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (allMediaSlides.length > 0) {
-                            setLightboxState({
-                              isOpen: true,
-                              slides: allMediaSlides,
-                              index: 0,
-                            });
-                          }
-                        }}
-                        title="Hacé clic para ampliar imagen"
-                      >
+                      <div className={styles.coverWrapper}>
                         <img src={item.coverImage} alt={item.title} className={styles.coverImg} />
                       </div>
                     )}
 
                     <div className={styles.cardMainInfo}>
                       <div className={styles.statusRow}>
-                        <span className={styles.typeBadge}>
-                          {item.itemType === "event" ? "Evento" : "Exhibición"}
-                        </span>
                         {getStatusBadge(item.status)}
                       </div>
 
@@ -253,32 +195,6 @@ export default function AgendaPage() {
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                       >
-                        {/* High-Resolution Expanded Cover Banner */}
-                        {item.coverImage && (
-                          <div
-                            className={styles.expandedCoverWrapper}
-                            onClick={() => {
-                              if (allMediaSlides.length > 0) {
-                                setLightboxState({
-                                  isOpen: true,
-                                  slides: allMediaSlides,
-                                  index: 0,
-                                });
-                              }
-                            }}
-                            title="Hacé clic para ver en tamaño completo"
-                          >
-                            <img
-                              src={item.coverImage}
-                              alt={item.title}
-                              className={styles.expandedCoverImg}
-                            />
-                            <div className={styles.coverZoomHint}>
-                              <span>Ampliar imagen ↗</span>
-                            </div>
-                          </div>
-                        )}
-
                         <div className={styles.detailGrid}>
                           {fullDateRange && (
                             <div className={styles.detailItem}>
@@ -292,7 +208,7 @@ export default function AgendaPage() {
                             </div>
                           )}
 
-                          {item.itemType === "exhibition" && item.curator && (
+                          {item.curator && (
                             <div className={styles.detailItem}>
                               <strong>Curaduría:</strong> {item.curator}
                             </div>
@@ -301,81 +217,16 @@ export default function AgendaPage() {
 
                         {item.description && (
                           <div className={styles.descriptionBox}>
-                            {Array.isArray(item.description) ? (
-                              item.description.map((par, pIdx) => (
-                                <p
-                                  key={pIdx}
-                                  style={{
-                                    margin: 0,
-                                    marginBottom:
-                                      pIdx < item.description.length - 1 ? "0.75rem" : 0,
-                                  }}
-                                >
-                                  {par}
-                                </p>
-                              ))
-                            ) : (
-                              <p style={{ margin: 0 }}>{item.description}</p>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Gallery Section */}
-                        {galleryUrls.length > 0 && (
-                          <div className={styles.gallerySection}>
-                            <h3 className={styles.galleryTitle}>
-                              Registro / Galería ({galleryUrls.length})
-                            </h3>
-                            <div className={styles.galleryGrid}>
-                              {galleryUrls.map((imgUrl, gIdx) => {
-                                const slideIdx = item.coverImage ? gIdx + 1 : gIdx;
-                                return (
-                                  <div
-                                    key={gIdx}
-                                    className={styles.galleryThumbWrapper}
-                                    onClick={() => {
-                                      setLightboxState({
-                                        isOpen: true,
-                                        slides: allMediaSlides,
-                                        index: slideIdx,
-                                      });
-                                    }}
-                                    title="Hacé clic para ampliar"
-                                  >
-                                    <img
-                                      src={imgUrl}
-                                      alt={`${item.title} - ${gIdx + 1}`}
-                                      className={styles.galleryThumb}
-                                      loading="lazy"
-                                    />
-                                  </div>
-                                );
-                              })}
-                            </div>
+                            <p style={{ margin: 0 }}>{item.description}</p>
                           </div>
                         )}
 
                         <div className={styles.actionRow}>
-                          {item.itemType === "exhibition" && (
-                            <Link href="/exhibiciones" className={styles.blueBtn}>
-                              Ver en Exhibiciones →
-                            </Link>
-                          )}
+                          <Link href="/exhibiciones" className={styles.blueBtn}>
+                            Ver en Exhibiciones →
+                          </Link>
 
-                          {item.pdfCatalog && (
-                            <a
-                              href={item.pdfCatalog}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={styles.outlineBtn}
-                            >
-                              {item.itemType === "event"
-                                ? "Ver Programa / Folleto (PDF) ↗"
-                                : "Catálogo PDF ↗"}
-                            </a>
-                          )}
-
-                          {item.itemType === "exhibition" && item.tour360Url && (
+                          {item.tour360Url && (
                             <a
                               href={item.tour360Url}
                               target="_blank"
@@ -394,13 +245,6 @@ export default function AgendaPage() {
             })}
           </motion.div>
         )}
-
-        <Lightbox
-          isOpen={lightboxState.isOpen}
-          slides={lightboxState.slides}
-          index={lightboxState.index}
-          onClose={() => setLightboxState((prev) => ({ ...prev, isOpen: false }))}
-        />
       </main>
     </div>
   );
